@@ -1,25 +1,32 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
+import { getSwaggerConfig } from './configs/swagger.config.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  app.use(cookieParser());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
-  const config = new DocumentBuilder()
-    .setTitle('Nest Home Work')
-    .setDescription('Documentation for NestJS homework API')
-    .setVersion('1.0')
-    .addTag('Auth', 'User auth operations', undefined, { kind: 'nav' })
-    .build();
+  const config = getSwaggerConfig();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
+  SwaggerModule.setup('docs', app, documentFactory, {
+    jsonDocumentUrl: '/swagger.json',
+    yamlDocumentUrl: '/swagger.yaml',
+  });
 
   app.enableShutdownHooks();
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+await bootstrap();

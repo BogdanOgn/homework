@@ -14,14 +14,27 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  login            String   @unique
-  email            String   @unique
+  id               String         @id @default(uuid())
+  login            String         @unique
+  email            String         @unique
   password         String
   age              Int
-  aboutDescription String?  @map("about_description")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  aboutDescription String?        @map("about_description")
+  refreshTokens    RefreshToken[]
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.Char(64)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
