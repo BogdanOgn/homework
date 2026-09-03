@@ -51,10 +51,13 @@ export const ApiDelete = () => {
       summary: 'Soft delete user',
     }),
     ApiUnauthorizedResponse({ description: 'Unauthorization' }),
-    ApiOkResponse({ type: 'OK' }),
+    ApiOkResponse({
+      description: 'User soft deleted',
+      schema: { type: 'string', example: 'OK' },
+    }),
     ApiBearerAuth(),
     SkipThrottle(),
-    Delete('user/:id'),
+    Delete(':id'),
     HttpCode(HttpStatus.OK),
   );
 };

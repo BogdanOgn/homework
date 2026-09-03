@@ -62,7 +62,7 @@ export class UserRepository {
       omit: {
         password: true,
       },
-      where: { email, deletedAt: null },
+      where: { email },
     });
 
     return user;
@@ -73,11 +73,12 @@ export class UserRepository {
       omit: {
         password: true,
       },
-      where: { login, deletedAt: null },
+      where: { login },
     });
 
     return user;
   }
+
   async findByLoginWithPassword(
     login: string,
   ): Promise<UserResponseWithPassword | null> {
@@ -99,7 +100,7 @@ export class UserRepository {
     return user;
   }
 
-  async softDelete(id: string) {
+  async softDelete(id: string): Promise<void> {
     await this.prismaService.user.update({
       where: { id },
       data: {
