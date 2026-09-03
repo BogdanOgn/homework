@@ -5,13 +5,16 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { RegisterUserDto } from '../dto/register-user.dto.js';
+import { RegisterUserDto } from './dto/register-user.dto.js';
 import * as bcrypt from 'bcrypt';
-import { LoginUserDto } from '../dto/login-user.dto.js';
+import { LoginUserDto } from './dto/login-user.dto.js';
 import { UserService } from '@features/user/user.service.js';
 import { UserResponse } from '@features/user/types/user.types.js';
-import { TokenService } from './token.service.js';
-import { ITokenPayload, ITokensResponse } from '../types/token.types.js';
+import { TokenService } from '@features/token/token.service.js';
+import {
+  ITokenPayload,
+  ITokensResponse,
+} from '@features/token/types/token.types.js';
 
 @Injectable()
 export class AuthService {
