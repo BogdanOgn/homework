@@ -1,33 +1,21 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Logger,
-  Post,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Logger, Res } from '@nestjs/common';
 import { AuthService } from './services/auth.service.js';
-import {
-  ApiBadRequestResponse,
-  ApiConflictResponse,
-  ApiCookieAuth,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { RegisterUserDto } from './dto/register-user.dto.js';
 import { LoginUserDto } from './dto/login-user.dto.js';
 import type { Response } from 'express';
 import { TokenService } from './services/token.service.js';
-import { RefreshTokenAuthorization } from './decorators/authorization.decorator.js';
 import { Authorized } from './decorators/authorizade.decorator.js';
 import type { User } from '../generated/prisma/client.js';
-import { AuthResponse } from './dto/auth.dto.js';
 import type { RefreshAuthorizedUser } from '../features/user/types/user.types.js';
-import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { IAccessTokenResponse } from './types/token.types.js';
+import {
+  ApiLogin,
+  ApiLogout,
+  ApiLogoutAll,
+  ApiRefresh,
+  ApiRegister,
+} from './decorators/api-auth.decorator.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -39,14 +27,7 @@ export class AuthController {
     private readonly tokenService: TokenService,
   ) {}
 
-  @ApiOperation({ summary: 'Register new user' })
-  @ApiOkResponse({ type: AuthResponse })
-  @ApiBadRequestResponse({ description: 'Incorrect credentials' })
-  @ApiConflictResponse({ description: 'User with this email already existing' })
-  @ApiConflictResponse({ description: 'User with this login already existing' })
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
+  @ApiRegister()
   async register(
     @Res({ passthrough: true }) res: Response,
     @Body() dto: RegisterUserDto,
@@ -62,15 +43,7 @@ export class AuthController {
     return { accessToken };
   }
 
-  @ApiOperation({
-    summary: 'Login user',
-  })
-  @ApiOkResponse({ type: AuthResponse })
-  @ApiBadRequestResponse({ description: 'Enter your login' })
-  @ApiUnauthorizedResponse({ description: 'Incorrect credentials' })
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
+  @ApiLogin()
   async login(
     @Res({ passthrough: true }) res: Response,
     @Body() dto: LoginUserDto,
@@ -86,14 +59,7 @@ export class AuthController {
     return { accessToken };
   }
 
-  @RefreshTokenAuthorization()
-  @ApiOperation({
-    summary: 'Logout user',
-  })
-  @ApiOkResponse({ description: 'OK' })
-  @SkipThrottle()
-  @Post('logout')
-  @HttpCode(HttpStatus.OK)
+  @ApiLogout()
   async logout(
     @Authorized('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) res: Response,
@@ -104,14 +70,7 @@ export class AuthController {
     return 'OK';
   }
 
-  @RefreshTokenAuthorization()
-  @ApiOperation({
-    summary: 'Logout all user accounts',
-  })
-  @ApiOkResponse({ description: 'OK' })
-  @SkipThrottle()
-  @Post('logout-all')
-  @HttpCode(HttpStatus.OK)
+  @ApiLogoutAll()
   async logoutAll(
     @Authorized() user: User,
     @Res({ passthrough: true }) res: Response,
@@ -123,16 +82,7 @@ export class AuthController {
     return 'OK';
   }
 
-  @RefreshTokenAuthorization()
-  @ApiOperation({
-    summary: 'Get new tokens by refresh token',
-  })
-  @ApiOkResponse({ type: AuthResponse })
-  @ApiUnauthorizedResponse({ description: 'Invalid refresh token' })
-  @ApiCookieAuth()
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
+  @ApiRefresh()
   async refresh(
     @Authorized() user: RefreshAuthorizedUser,
     @Res({ passthrough: true }) res: Response,
