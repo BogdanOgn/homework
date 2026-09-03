@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Logger,
@@ -11,7 +10,6 @@ import {
 import { AuthService } from './services/auth.service.js';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
   ApiConflictResponse,
   ApiCookieAuth,
   ApiOkResponse,
@@ -23,14 +21,10 @@ import { RegisterUserDto } from './dto/register-user.dto.js';
 import { LoginUserDto } from './dto/login-user.dto.js';
 import type { Response } from 'express';
 import { TokenService } from './services/token.service.js';
-import {
-  AccessTokenAuthorization,
-  RefreshTokenAuthorization,
-} from './decorators/authorization.decorator.js';
+import { RefreshTokenAuthorization } from './decorators/authorization.decorator.js';
 import { Authorized } from './decorators/authorizade.decorator.js';
 import type { User } from '../generated/prisma/client.js';
 import { AuthResponse } from './dto/auth.dto.js';
-import { UserResponse } from './dto/user.dto.js';
 import type { RefreshAuthorizedUser } from '../features/user/types/user.types.js';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { IAccessTokenResponse } from './types/token.types.js';
@@ -153,21 +147,5 @@ export class AuthController {
       this.tokenService.getRefreshTokenCookie(),
     );
     return { accessToken };
-  }
-
-  @AccessTokenAuthorization()
-  @ApiOperation({
-    summary: 'Get current user',
-  })
-  @ApiOkResponse({ type: UserResponse })
-  @ApiUnauthorizedResponse({ description: 'User not found' })
-  @ApiBearerAuth()
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
-  @Get('me')
-  @HttpCode(HttpStatus.OK)
-  me(@Authorized() user: User): User {
-    this.logger.log('[Me]: get current user accout');
-
-    return user;
   }
 }

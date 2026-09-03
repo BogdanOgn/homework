@@ -6,6 +6,7 @@ export const getSwaggerConfig = (): Omit<OpenAPIObject, 'paths'> => {
     .setDescription('Documentation for NestJS homework API')
     .setVersion('1.0')
     .addTag('Auth', 'User auth operations', undefined, { kind: 'nav' })
+    .addTag('User', 'User operations', undefined, { kind: 'nav' })
     .addCookieAuth('refreshToken')
     .addBearerAuth()
     .build();
