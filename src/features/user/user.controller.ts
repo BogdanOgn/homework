@@ -1,4 +1,10 @@
-import { Controller, Logger, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  ForbiddenException,
+  Logger,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authorized } from '@auth/decorators/authorizade.decorator.js';
 import type { User } from '@generated/prisma/client.js';
@@ -25,7 +31,13 @@ export class UserController {
   }
 
   @ApiDelete()
-  async delete(@Param('id') id: string): Promise<string> {
+  async delete(
+    @Param('id') id: string,
+    @Authorized() user: User,
+  ): Promise<string> {
+    if (user.id !== id) {
+      throw new ForbiddenException('Forbidden access');
+    }
     this.logger.log('[SoftDelete]: soft delete user');
     await this.userService.softDelete(id);
     return 'OK';

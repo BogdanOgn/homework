@@ -7,10 +7,14 @@ import type {
   UserResponseWithPassword,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
+import { TokenService } from '@features/token/token.service.js';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly tokenService: TokenService,
+  ) {}
 
   async create(dto: ICreateUserData): Promise<UserResponse> {
     return this.userRepository.create(dto);
@@ -19,6 +23,7 @@ export class UserService {
   async findMany(filters: UsersFiltersDto): Promise<IUsersListResponse> {
     return this.userRepository.findMany(filters);
   }
+
   async findByEmail(email: string): Promise<UserResponse | null> {
     return this.userRepository.findByEmail(email);
   }
@@ -39,6 +44,8 @@ export class UserService {
 
   async softDelete(id: string): Promise<string> {
     await this.userRepository.softDelete(id);
+    await this.tokenService.deleteManyByUserId(id);
+
     return 'OK';
   }
 }
