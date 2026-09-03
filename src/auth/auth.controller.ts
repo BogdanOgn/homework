@@ -1,14 +1,13 @@
 import { Body, Controller, Logger, Res } from '@nestjs/common';
-import { AuthService } from './services/auth.service.js';
+import { AuthService } from './auth.service.js';
 import { ApiTags } from '@nestjs/swagger';
 import { RegisterUserDto } from './dto/register-user.dto.js';
 import { LoginUserDto } from './dto/login-user.dto.js';
 import type { Response } from 'express';
-import { TokenService } from './services/token.service.js';
 import { Authorized } from './decorators/authorizade.decorator.js';
 import type { User } from '../generated/prisma/client.js';
-import type { RefreshAuthorizedUser } from '../features/user/types/user.types.js';
-import { IAccessTokenResponse } from './types/token.types.js';
+import type { RefreshAuthorizedUser } from '@features/user/types/user.types.js';
+import { TokenService } from '@features/token/token.service.js';
 import {
   ApiLogin,
   ApiLogout,
@@ -16,6 +15,7 @@ import {
   ApiRefresh,
   ApiRegister,
 } from './decorators/api-auth.decorator.js';
+import { IAccessTokenResponse } from '@features/token/types/token.types.js';
 
 @ApiTags('Auth')
 @Controller('auth')

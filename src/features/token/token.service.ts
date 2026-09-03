@@ -3,13 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { CookieOptions } from 'express';
 import ms, { StringValue } from 'ms';
-import { UserService } from '@features/user/user.service.js';
-import { UserResponse } from '@features/user/types/user.types.js';
 import { RefreshToken } from '@generated/prisma/client.js';
 import { isDev } from '@common/utils/is-dev.util.js';
-import { ITokenPayload, ITokensResponse } from '../types/token.types.js';
-import { TokenRepository } from '../repositories/token.repository.js';
-import { hashToken } from '../utils/hash-token.util.js';
+import { ITokenPayload, ITokensResponse } from './types/token.types.js';
+import { TokenRepository } from './token.repository.js';
+import { hashToken } from './utils/hash-token.util.js';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -25,7 +23,6 @@ export class TokenService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly tokenRepository: TokenRepository,
-    private readonly userService: UserService,
   ) {
     this.JWT_ACCESS_TOKEN_TTL = configService.getOrThrow<StringValue>(
       'JWT_ACCESS_TOKEN_TTL',
@@ -69,7 +66,7 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
-  async validateRefreshToken(token: string): Promise<UserResponse> {
+  async validateRefreshToken(token: string): Promise<ITokenPayload> {
     const storedToken = await this.find(token);
 
     if (!storedToken) {
@@ -85,13 +82,11 @@ export class TokenService {
         secret: this.JWT_REFRESH_SECRET,
       });
 
-      const user = await this.userService.findById(payload.id);
-
-      if (!user) {
+      if (!payload) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      return user;
+      return payload;
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
