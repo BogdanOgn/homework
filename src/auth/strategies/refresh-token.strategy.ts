@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../services/auth.service.js';
 import { Request } from 'express';
 import { TokenService } from '../services/token.service.js';
-import { RefreshAuthorizedUser } from '../../features/user/types/user.types.js';
+import { RefreshAuthorizedUser } from '@features/user/types/user.types.js';
 
 const extractRefreshToken = (req: Request): string | null => {
   const cookies = req.cookies as Record<string, string | undefined> | undefined;

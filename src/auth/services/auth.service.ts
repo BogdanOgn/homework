@@ -8,10 +8,10 @@ import {
 import { RegisterUserDto } from '../dto/register-user.dto.js';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from '../dto/login-user.dto.js';
-import { UserService } from '../../features/user/user.service.js';
+import { UserService } from '@features/user/user.service.js';
+import { UserResponse } from '@features/user/types/user.types.js';
 import { TokenService } from './token.service.js';
 import { ITokenPayload, ITokensResponse } from '../types/token.types.js';
-import { UserResponse } from '../../features/user/types/user.types.js';
 
 @Injectable()
 export class AuthService {

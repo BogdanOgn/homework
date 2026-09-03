@@ -6,8 +6,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { AccessTokenAuthorization } from '../../../auth/decorators/authorization.decorator.js';
-import { UserResponse } from '../../../auth/dto/user.dto.js';
+import { AccessTokenAuthorization } from '@auth/decorators/authorization.decorator.js';
+import { UserResponse } from '@auth/dto/user.dto.js';
 
 export const ApiMe = () => {
   return applyDecorators(

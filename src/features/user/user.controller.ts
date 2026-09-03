@@ -1,7 +1,7 @@
 import { Controller, Logger } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Authorized } from '../../auth/decorators/authorizade.decorator.js';
-import type { User } from '../../generated/prisma/client.js';
+import { Authorized } from '@auth/decorators/authorizade.decorator.js';
+import type { User } from '@generated/prisma/client.js';
 import { UserService } from './user.service.js';
 import { ApiMe } from './decorators/api-user.decorator.js';
 

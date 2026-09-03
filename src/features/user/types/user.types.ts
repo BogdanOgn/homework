@@ -1,4 +1,4 @@
-import { User } from '../../../generated/prisma/client.js';
+import { User } from '@generated/prisma/client.js';
 
 export interface ICreateUserData {
   login: string;

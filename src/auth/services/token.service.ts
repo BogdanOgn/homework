@@ -1,16 +1,16 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { ITokenPayload, ITokensResponse } from '../types/token.types.js';
-import ms, { StringValue } from 'ms';
-import { isDev } from '../../common/utils/is-dev.util.js';
 import type { CookieOptions } from 'express';
+import ms, { StringValue } from 'ms';
+import { UserService } from '@features/user/user.service.js';
+import { UserResponse } from '@features/user/types/user.types.js';
+import { RefreshToken } from '@generated/prisma/client.js';
+import { isDev } from '@common/utils/is-dev.util.js';
+import { ITokenPayload, ITokensResponse } from '../types/token.types.js';
 import { TokenRepository } from '../repositories/token.repository.js';
 import { hashToken } from '../utils/hash-token.util.js';
-import { UserService } from '../../features/user/user.service.js';
 import { randomUUID } from 'crypto';
-import { UserResponse } from '../../features/user/types/user.types.js';
-import { RefreshToken } from '../../generated/prisma/client.js';
 
 @Injectable()
 export class TokenService {
