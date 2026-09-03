@@ -32,6 +32,7 @@ export class UserRepository {
         contains: filters.search,
         mode: 'insensitive',
       },
+      deletedAt: null,
     } as const;
 
     const [total, users] = await Promise.all([
@@ -61,7 +62,7 @@ export class UserRepository {
       omit: {
         password: true,
       },
-      where: { email },
+      where: { email, deletedAt: null },
     });
 
     return user;
@@ -72,7 +73,7 @@ export class UserRepository {
       omit: {
         password: true,
       },
-      where: { login },
+      where: { login, deletedAt: null },
     });
 
     return user;
@@ -81,7 +82,7 @@ export class UserRepository {
     login: string,
   ): Promise<UserResponseWithPassword | null> {
     const user = await this.prismaService.user.findUnique({
-      where: { login },
+      where: { login, deletedAt: null },
     });
 
     return user;
@@ -92,9 +93,18 @@ export class UserRepository {
       omit: {
         password: true,
       },
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     return user;
+  }
+
+  async softDelete(id: string) {
+    await this.prismaService.user.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
   }
 }

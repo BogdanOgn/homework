@@ -1,9 +1,13 @@
-import { Controller, Logger, Query } from '@nestjs/common';
+import { Controller, Logger, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authorized } from '@auth/decorators/authorizade.decorator.js';
 import type { User } from '@generated/prisma/client.js';
 import { UserService } from './user.service.js';
-import { ApiMe, ApiFindAll } from './decorators/api-user.decorator.js';
+import {
+  ApiMe,
+  ApiFindAll,
+  ApiDelete,
+} from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import { IUsersListResponse } from './types/user.types.js';
 
@@ -18,6 +22,13 @@ export class UserController {
     this.logger.log('[FindAll]: get users list');
     const users = this.userService.findMany(filters);
     return users;
+  }
+
+  @ApiDelete()
+  async delete(@Param('id') id: string): Promise<string> {
+    this.logger.log('[SoftDelete]: soft delete user');
+    await this.userService.softDelete(id);
+    return 'OK';
   }
 
   @ApiMe()
