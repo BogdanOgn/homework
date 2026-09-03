@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository.js';
 import type {
   ICreateUserData,
+  IUsersListResponse,
   UserResponse,
   UserResponseWithPassword,
 } from './types/user.types.js';
+import { UsersFiltersDto } from './dto/users-filters.dto.js';
 
 @Injectable()
 export class UserService {
@@ -14,6 +16,9 @@ export class UserService {
     return this.userRepository.create(dto);
   }
 
+  async findMany(filters: UsersFiltersDto): Promise<IUsersListResponse> {
+    return this.userRepository.findMany(filters);
+  }
   async findByEmail(email: string): Promise<UserResponse | null> {
     return this.userRepository.findByEmail(email);
   }

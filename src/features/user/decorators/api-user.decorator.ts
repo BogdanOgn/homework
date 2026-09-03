@@ -5,7 +5,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AccessTokenAuthorization } from '@auth/decorators/authorization.decorator.js';
 import { UserResponse } from '@auth/dto/user.dto.js';
 
@@ -20,6 +20,21 @@ export const ApiMe = () => {
     ApiBearerAuth(),
     Throttle({ default: { limit: 10, ttl: 60000 } }),
     Get('me'),
+    HttpCode(HttpStatus.OK),
+  );
+};
+
+export const ApiFindAll = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'Get users list',
+    }),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiOkResponse({ type: UserResponse }),
+    ApiBearerAuth(),
+    SkipThrottle(),
+    Get('users'),
     HttpCode(HttpStatus.OK),
   );
 };

@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   ICreateUserData,
+  IUsersListResponse,
   UserResponse,
   UserResponseWithPassword,
 } from './types/user.types.js';
+import { UsersFiltersDto } from './dto/users-filters.dto.js';
 
 @Injectable()
 export class UserRepository {
@@ -19,6 +21,39 @@ export class UserRepository {
     });
 
     return user;
+  }
+
+  async findMany(filters: UsersFiltersDto): Promise<IUsersListResponse> {
+    const pageSize = filters.pageSize ?? 10;
+    const page = filters.page ?? 1;
+
+    const where = {
+      login: {
+        contains: filters.search,
+        mode: 'insensitive',
+      },
+    } as const;
+
+    const [total, users] = await Promise.all([
+      this.prismaService.user.count({ where }),
+      this.prismaService.user.findMany({
+        omit: {
+          password: true,
+        },
+        where,
+        take: pageSize,
+        skip: (page - 1) * pageSize,
+        orderBy: { login: 'asc' },
+      }),
+    ]);
+
+    return {
+      users,
+      total,
+      pageSize,
+      page,
+      pages: total > 0 ? Math.ceil(total / pageSize) : 0,
+    };
   }
 
   async findByEmail(email: string): Promise<UserResponse | null> {
