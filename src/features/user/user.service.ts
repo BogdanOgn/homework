@@ -36,4 +36,9 @@ export class UserService {
   async findById(id: string): Promise<UserResponse | null> {
     return await this.userRepository.findById(id);
   }
+
+  async softDelete(id: string): Promise<string> {
+    await this.userRepository.softDelete(id);
+    return 'OK';
+  }
 }

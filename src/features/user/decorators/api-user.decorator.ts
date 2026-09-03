@@ -1,4 +1,10 @@
-import { applyDecorators, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  applyDecorators,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -35,6 +41,20 @@ export const ApiFindAll = () => {
     ApiBearerAuth(),
     SkipThrottle(),
     Get('users'),
+    HttpCode(HttpStatus.OK),
+  );
+};
+export const ApiDelete = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'Soft delete user',
+    }),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiOkResponse({ type: 'OK' }),
+    ApiBearerAuth(),
+    SkipThrottle(),
+    Delete('user/:id'),
     HttpCode(HttpStatus.OK),
   );
 };
