@@ -15,6 +15,7 @@ import {
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AccessTokenAuthorization } from '@auth/decorators/authorization.decorator.js';
 import { UserResponse } from '@auth/dto/user.dto.js';
+import { UsersListResponse } from '../dto/users-list-response.dto.js';
 
 export const ApiMe = () => {
   return applyDecorators(
@@ -38,7 +39,7 @@ export const ApiFindAll = () => {
       summary: 'Get users list',
     }),
     ApiUnauthorizedResponse({ description: 'Unauthorization' }),
-    ApiOkResponse({ type: UserResponse }),
+    ApiOkResponse({ type: UsersListResponse }),
     ApiBearerAuth(),
     SkipThrottle(),
     Get('users'),

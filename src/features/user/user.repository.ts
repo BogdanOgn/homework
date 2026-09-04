@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   ICreateUserData,
-  IUsersListResponse,
   UserResponse,
   UserResponseWithPassword,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
+import { UsersListResponse } from './dto/users-list-response.dto.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
+import { SORT_BY } from './enums/sort-by.enum.js';
+import { SORT_ORDER } from './enums/sort-order.enum.js';
 
 @Injectable()
 export class UserRepository {
@@ -24,9 +26,13 @@ export class UserRepository {
     return user;
   }
 
-  async findMany(filters: UsersFiltersDto): Promise<IUsersListResponse> {
+  async findMany(filters: UsersFiltersDto): Promise<UsersListResponse> {
     const pageSize = filters.pageSize ?? 10;
     const page = filters.page ?? 1;
+
+    const orderBy = {
+      [filters.sortBy ?? SORT_BY.LOGIN]: filters.sortOrder ?? SORT_ORDER.ASC,
+    };
 
     const where = {
       login: {
@@ -45,7 +51,7 @@ export class UserRepository {
         where,
         take: pageSize,
         skip: (page - 1) * pageSize,
-        orderBy: { login: 'asc' },
+        orderBy,
       }),
     ]);
 
