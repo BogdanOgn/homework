@@ -8,6 +8,7 @@ import type {
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import { TokenService } from '@features/token/token.service.js';
+import { UserUpdateDto } from './dto/user-update.dto.js';
 
 @Injectable()
 export class UserService {
@@ -47,5 +48,9 @@ export class UserService {
     await this.tokenService.deleteManyByUserId(id);
 
     return 'OK';
+  }
+
+  async update(id: string, dto: UserUpdateDto): Promise<UserResponse> {
+    return await this.userRepository.update(id, dto);
   }
 }

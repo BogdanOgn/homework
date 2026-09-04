@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   ForbiddenException,
   Logger,
@@ -13,9 +14,11 @@ import {
   ApiMe,
   ApiFindAll,
   ApiDelete,
+  ApiUpdate,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
-import { IUsersListResponse } from './types/user.types.js';
+import { IUsersListResponse, UserResponse } from './types/user.types.js';
+import { UserUpdateDto } from './dto/user-update.dto.js';
 
 @ApiTags('User')
 @Controller('user')
@@ -41,6 +44,19 @@ export class UserController {
     this.logger.log('[SoftDelete]: soft delete user');
     await this.userService.softDelete(id);
     return 'OK';
+  }
+
+  @ApiUpdate()
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UserUpdateDto,
+    @Authorized() user: User,
+  ): Promise<UserResponse> {
+    if (user.id !== id) {
+      throw new ForbiddenException('Forbidden access');
+    }
+    this.logger.log('[SoftDelete]: soft delete user');
+    return await this.userService.update(id, dto);
   }
 
   @ApiMe()
