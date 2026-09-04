@@ -51,7 +51,6 @@ export class AuthService {
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(user);
 
-    this.logger.log(`[Register]: User register with id - ${user.id}`);
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
@@ -82,7 +81,6 @@ export class AuthService {
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(user);
 
-    this.logger.log(`[Login]: User login with id - ${user.id}`);
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
@@ -102,7 +100,6 @@ export class AuthService {
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(user);
 
-    this.logger.log(`[Refresh]: Tokens refreshed for user - ${user.id}`);
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
@@ -110,6 +107,9 @@ export class AuthService {
     const user = await this.userService.findById(id);
 
     if (!user) {
+      this.logger.warn(
+        `[Мalidate]: Failed user validate, user not found - ${id}`,
+      );
       throw new UnauthorizedException('User not found');
     }
 

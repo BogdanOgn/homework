@@ -70,11 +70,13 @@ export class TokenService {
     const storedToken = await this.find(token);
 
     if (!storedToken) {
+      this.logger.warn('[Validate Refresh Token]: Token not found in bd');
       throw new UnauthorizedException('Invalid refresh token');
     }
 
     if (storedToken.expiresAt < new Date()) {
       await this.deleteManyByToken(token);
+      this.logger.warn('[Validate Refresh Token]: Token has been expired');
       throw new UnauthorizedException('Invalid refresh token');
     }
     try {
@@ -83,11 +85,13 @@ export class TokenService {
       });
 
       if (!payload) {
+        this.logger.warn('[Validate Refresh Token]: Invalid refresh token');
         throw new UnauthorizedException('Invalid refresh token');
       }
 
       return payload;
     } catch {
+      this.logger.warn('[Validate Refresh Token]: Invalid refresh token');
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
