@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -58,6 +59,20 @@ export const ApiDelete = () => {
     ApiBearerAuth(),
     SkipThrottle(),
     Delete(':id'),
+    HttpCode(HttpStatus.OK),
+  );
+};
+export const ApiUpdate = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'Update user',
+    }),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiOkResponse({ type: UserResponse }),
+    ApiBearerAuth(),
+    Throttle({ default: { limit: 10, ttl: 60000 } }),
+    Patch(':id'),
     HttpCode(HttpStatus.OK),
   );
 };

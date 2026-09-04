@@ -7,6 +7,7 @@ import type {
   UserResponseWithPassword,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
+import { UserUpdateDto } from './dto/user-update.dto.js';
 
 @Injectable()
 export class UserRepository {
@@ -107,5 +108,23 @@ export class UserRepository {
         deletedAt: new Date(),
       },
     });
+  }
+
+  async update(id: string, dto: UserUpdateDto): Promise<UserResponse> {
+    const user = await this.prismaService.user.update({
+      omit: {
+        password: true,
+      },
+      where: { id },
+      data: {
+        login: dto.login,
+        email: dto.email,
+        aboutDescription: dto.aboutDescription,
+        password: dto.password,
+        age: dto.age,
+      },
+    });
+
+    return user;
   }
 }
