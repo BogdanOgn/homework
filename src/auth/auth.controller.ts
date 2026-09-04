@@ -39,7 +39,7 @@ export class AuthController {
       this.tokenService.getRefreshTokenCookie(),
     );
 
-    this.logger.log(`[Register]: registering user with email - ${dto.login}`);
+    this.logger.log(`[Register]: Register user with email - ${dto.email}`);
     return { accessToken };
   }
 
@@ -55,18 +55,19 @@ export class AuthController {
       this.tokenService.getRefreshTokenCookie(),
     );
 
-    this.logger.log(`[Login]: attempting login user with login - ${dto.login}`);
+    this.logger.log(`[Login]: Login user with login - ${dto.login}`);
     return { accessToken };
   }
 
   @ApiLogout()
   async logout(
-    @Authorized('refreshToken') refreshToken: string,
+    @Authorized() user: RefreshAuthorizedUser,
     @Res({ passthrough: true }) res: Response,
   ): Promise<string> {
     res.clearCookie('refreshToken', this.tokenService.getRefreshTokenCookie());
-    await this.authService.logout(refreshToken);
-    this.logger.log('[Logout]: user logout');
+    await this.authService.logout(user.refreshToken);
+
+    this.logger.log(`[Logout]: Logout user account - ${user.id}`);
     return 'OK';
   }
 
@@ -78,7 +79,9 @@ export class AuthController {
     res.clearCookie('refreshToken', this.tokenService.getRefreshTokenCookie());
     await this.authService.logoutAll(user.id);
 
-    this.logger.log('[Logout]: logout all user accounts');
+    this.logger.log(
+      `[Logout All]: Logout from all users accounts - ${user.id}`,
+    );
     return 'OK';
   }
 
@@ -96,6 +99,8 @@ export class AuthController {
       refreshToken,
       this.tokenService.getRefreshTokenCookie(),
     );
+
+    this.logger.log(`[Refresh]: Tokens refreshed for user - ${user.id}`);
     return { accessToken };
   }
 }

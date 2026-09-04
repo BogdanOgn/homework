@@ -29,8 +29,8 @@ export class UserController {
 
   @ApiFindAll()
   findAll(@Query() filters: UsersFiltersDto): Promise<UsersListResponseDto> {
-    this.logger.log('[FindAll]: get users list');
     const users = this.userService.findMany(filters);
+    this.logger.log('[FindAll]: Get users list');
     return users;
   }
 
@@ -42,8 +42,8 @@ export class UserController {
     if (user.id !== id) {
       throw new ForbiddenException('Forbidden access');
     }
-    this.logger.log('[SoftDelete]: soft delete user');
     await this.userService.softDelete(id);
+    this.logger.log(`[SoftDelete]: Soft delete user - ${user.id}`);
     return 'OK';
   }
 
@@ -56,13 +56,13 @@ export class UserController {
     if (user.id !== id) {
       throw new ForbiddenException('Forbidden access');
     }
-    this.logger.log('[SoftDelete]: soft delete user');
+    this.logger.log(`[Update]: Update user data - ${user.id}`);
     return await this.userService.update(id, dto);
   }
 
   @ApiMe()
   me(@Authorized() user: User): User {
-    this.logger.log('[Me]: get current user accout');
+    this.logger.log(`[Me]: Get current user accout - ${user.id}`);
 
     return user;
   }
