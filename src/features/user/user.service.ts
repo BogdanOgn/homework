@@ -9,6 +9,7 @@ import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { TokenService } from '@features/token/token.service.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -51,6 +52,12 @@ export class UserService {
   }
 
   async update(id: string, dto: UserUpdateDto): Promise<UserResponse> {
-    return await this.userRepository.update(id, dto);
+    let updatedData;
+    if (dto.password) {
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
+      updatedData = { ...dto, password: hashedPassword };
+    }
+
+    return await this.userRepository.update(id, updatedData);
   }
 }
