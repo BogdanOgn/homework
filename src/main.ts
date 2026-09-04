@@ -5,6 +5,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { getSwaggerConfig } from './configs/swagger.config.js';
+import { HttpExсeptionFilter } from '@common/filters/http-exception.filter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.useGlobalFilters(new HttpExсeptionFilter());
 
   const config = getSwaggerConfig();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
