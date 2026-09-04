@@ -14,8 +14,8 @@ import {
 } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AccessTokenAuthorization } from '@auth/decorators/authorization.decorator.js';
-import { UserResponse } from '@auth/dto/user.dto.js';
-import { UsersListResponse } from '../dto/users-list-response.dto.js';
+import { UserResponseDto } from '@features/user/dto/user-response.dto.js';
+import { UsersListResponseDto } from '../dto/users-list-response.dto.js';
 
 export const ApiMe = () => {
   return applyDecorators(
@@ -23,7 +23,7 @@ export const ApiMe = () => {
     ApiOperation({
       summary: 'Get current user',
     }),
-    ApiOkResponse({ type: UserResponse }),
+    ApiOkResponse({ type: UserResponseDto }),
     ApiUnauthorizedResponse({ description: 'User not found' }),
     ApiBearerAuth(),
     Throttle({ default: { limit: 10, ttl: 60000 } }),
@@ -39,7 +39,7 @@ export const ApiFindAll = () => {
       summary: 'Get users list',
     }),
     ApiUnauthorizedResponse({ description: 'Unauthorization' }),
-    ApiOkResponse({ type: UsersListResponse }),
+    ApiOkResponse({ type: UsersListResponseDto }),
     ApiBearerAuth(),
     SkipThrottle(),
     Get('users'),
@@ -70,7 +70,7 @@ export const ApiUpdate = () => {
       summary: 'Update user',
     }),
     ApiUnauthorizedResponse({ description: 'Unauthorization' }),
-    ApiOkResponse({ type: UserResponse }),
+    ApiOkResponse({ type: UserResponseDto }),
     ApiBearerAuth(),
     Throttle({ default: { limit: 10, ttl: 60000 } }),
     Patch(':id'),

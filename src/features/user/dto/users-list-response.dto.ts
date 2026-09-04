@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserResponse as UserResponseDto } from '@auth/dto/user.dto.js';
+import { UserResponseDto } from '@features/user/dto/user-response.dto.js';
 import type { UserResponse } from '../types/user.types.js';
 
-export class UsersListResponse {
+export class UsersListResponseDto {
   @ApiProperty({
     description: 'users page',
     type: [UserResponseDto],

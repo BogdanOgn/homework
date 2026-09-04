@@ -6,7 +6,7 @@ import type {
   UserResponseWithPassword,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
-import { UsersListResponse } from './dto/users-list-response.dto.js';
+import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { TokenService } from '@features/token/token.service.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 
@@ -21,7 +21,7 @@ export class UserService {
     return this.userRepository.create(dto);
   }
 
-  async findMany(filters: UsersFiltersDto): Promise<UsersListResponse> {
+  async findMany(filters: UsersFiltersDto): Promise<UsersListResponseDto> {
     return this.userRepository.findMany(filters);
   }
 

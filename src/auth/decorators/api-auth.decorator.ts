@@ -8,13 +8,13 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
-import { AuthResponse } from '../dto/auth.dto.js';
+import { AuthResponseDto } from '../dto/auth.dto.js';
 import { RefreshTokenAuthorization } from './authorization.decorator.js';
 
 export const ApiRegister = () => {
   return applyDecorators(
     ApiOperation({ summary: 'Register new user' }),
-    ApiOkResponse({ type: AuthResponse }),
+    ApiOkResponse({ type: AuthResponseDto }),
     ApiBadRequestResponse({ description: 'Incorrect credentials' }),
     ApiConflictResponse({
       description: 'User with this email already existing',
@@ -33,7 +33,7 @@ export const ApiLogin = () => {
     ApiOperation({
       summary: 'Login user',
     }),
-    ApiOkResponse({ type: AuthResponse }),
+    ApiOkResponse({ type: AuthResponseDto }),
     ApiBadRequestResponse({ description: 'Enter your login' }),
     ApiUnauthorizedResponse({ description: 'Incorrect credentials' }),
     Throttle({ default: { limit: 3, ttl: 60000 } }),
@@ -71,7 +71,7 @@ export const ApiRefresh = () => {
     ApiOperation({
       summary: 'Get new tokens by refresh token',
     }),
-    ApiOkResponse({ type: AuthResponse }),
+    ApiOkResponse({ type: AuthResponseDto }),
     ApiUnauthorizedResponse({ description: 'Invalid refresh token' }),
     ApiCookieAuth(),
     Throttle({ default: { limit: 5, ttl: 60000 } }),

@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsString } from 'class-validator';
 
-export class UserResponse {
+export class UserResponseDto {
   @ApiProperty({
     description: 'User ID',
     example: 'fe46a3d6-7f2a-41d4-b008-e7b8265c7de8',
