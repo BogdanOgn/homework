@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository.js';
 import type {
   ICreateUserData,
-  IUsersListResponse,
   UserResponse,
   UserResponseWithPassword,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
+import { UsersListResponse } from './dto/users-list-response.dto.js';
 import { TokenService } from '@features/token/token.service.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 
@@ -21,7 +21,7 @@ export class UserService {
     return this.userRepository.create(dto);
   }
 
-  async findMany(filters: UsersFiltersDto): Promise<IUsersListResponse> {
+  async findMany(filters: UsersFiltersDto): Promise<UsersListResponse> {
     return this.userRepository.findMany(filters);
   }
 

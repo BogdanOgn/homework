@@ -8,14 +8,6 @@ export interface ICreateUserData {
   aboutDescription?: string;
 }
 
-export interface IUsersListResponse {
-  users: Omit<User, 'password'>[];
-  total: number;
-  pageSize: number;
-  page: number;
-  pages: number;
-}
-
 export type UserResponse = Omit<User, 'password'>;
 
 export type UserResponseWithPassword = User;
