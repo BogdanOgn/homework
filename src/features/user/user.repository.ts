@@ -6,7 +6,7 @@ import type {
   UserResponseWithPassword,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
-import { UsersListResponse } from './dto/users-list-response.dto.js';
+import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 import { SORT_BY } from './enums/sort-by.enum.js';
 import { SORT_ORDER } from './enums/sort-order.enum.js';
@@ -26,7 +26,7 @@ export class UserRepository {
     return user;
   }
 
-  async findMany(filters: UsersFiltersDto): Promise<UsersListResponse> {
+  async findMany(filters: UsersFiltersDto): Promise<UsersListResponseDto> {
     const pageSize = filters.pageSize ?? 10;
     const page = filters.page ?? 1;
 
