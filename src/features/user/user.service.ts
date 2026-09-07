@@ -1,0 +1,62 @@
+import { Injectable } from '@nestjs/common';
+import { UserRepository } from './user.repository.js';
+import type {
+  ICreateUserData,
+  IUpdateUserData,
+  UserResponse,
+  UserResponseWithPassword,
+} from './types/user.types.js';
+import { UsersFiltersDto } from './dto/users-filters.dto.js';
+import { UsersListResponseDto } from './dto/users-list-response.dto.js';
+import { TokenService } from '@features/token/token.service.js';
+import { UserUpdateDto } from './dto/user-update.dto.js';
+import * as bcrypt from 'bcrypt';
+
+@Injectable()
+export class UserService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly tokenService: TokenService,
+  ) {}
+
+  async create(dto: ICreateUserData): Promise<UserResponse> {
+    return this.userRepository.create(dto);
+  }
+
+  async findMany(filters: UsersFiltersDto): Promise<UsersListResponseDto> {
+    return this.userRepository.findMany(filters);
+  }
+
+  async findByEmail(email: string): Promise<UserResponse | null> {
+    return this.userRepository.findByEmail(email);
+  }
+
+  async findByLogin(login: string): Promise<UserResponse | null> {
+    return this.userRepository.findByLogin(login);
+  }
+
+  async findByLoginWithPassword(
+    login: string,
+  ): Promise<UserResponseWithPassword | null> {
+    return this.userRepository.findByLoginWithPassword(login);
+  }
+
+  async findById(id: string): Promise<UserResponse | null> {
+    return await this.userRepository.findById(id);
+  }
+
+  async softDelete(id: string): Promise<string> {
+    await this.userRepository.softDelete(id);
+    await this.tokenService.deleteManyByUserId(id);
+
+    return 'OK';
+  }
+
+  async update(id: string, dto: UserUpdateDto): Promise<UserResponse> {
+    const updatedData: IUpdateUserData = dto.password
+      ? { ...dto, password: await bcrypt.hash(dto.password, 10) }
+      : dto;
+
+    return await this.userRepository.update(id, updatedData);
+  }
+}
