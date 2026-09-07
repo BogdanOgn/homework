@@ -8,6 +8,7 @@ import type { RefreshToken } from '@generated/prisma/client.js';
 import { TokenRepository } from './token.repository.js';
 import { hashToken } from './utils/hash-token.util.js';
 import { ITokenPayload } from './types/token.types.js';
+import { ConfigService } from '@nestjs/config';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -70,6 +71,12 @@ describe('TokenService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         TokenService,
+        {
+          provide: ConfigService,
+          useValue: {
+            getOrThrow: vi.fn((key: string) => fakeEnv[key]),
+          },
+        },
         {
           provide: JwtService,
           useValue: {

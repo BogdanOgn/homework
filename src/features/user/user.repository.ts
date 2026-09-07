@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   ICreateUserData,
+  IUpdateUserData,
   UserResponse,
   UserResponseWithPassword,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
-import { UserUpdateDto } from './dto/user-update.dto.js';
 import { SORT_BY } from './enums/sort-by.enum.js';
 import { SORT_ORDER } from './enums/sort-order.enum.js';
 
@@ -116,7 +116,7 @@ export class UserRepository {
     });
   }
 
-  async update(id: string, dto: UserUpdateDto): Promise<UserResponse> {
+  async update(id: string, dto: IUpdateUserData): Promise<UserResponse> {
     const user = await this.prismaService.user.update({
       omit: {
         password: true,
