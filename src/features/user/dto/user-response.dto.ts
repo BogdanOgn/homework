@@ -50,4 +50,11 @@ export class UserResponseDto {
   })
   @IsString()
   updatedAt!: Date;
+
+  @ApiProperty({
+    description: 'User account deleted at',
+    example: null,
+  })
+  @IsString()
+  deletedAt!: Date | null;
 }
