@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -29,8 +28,6 @@ export class AuthService {
     const existingUserByEmail = await this.userService.findByEmail(email);
     const existingUserByLogin = await this.userService.findByLogin(login);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     if (existingUserByEmail) {
       this.logger.warn(
         `[Register]: Failed user register - email '${email}' already exist`,
@@ -44,6 +41,8 @@ export class AuthService {
       throw new ConflictException('User with this username already existing');
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const userRegisterData = { ...dto, password: hashedPassword };
 
     const user = await this.userService.create(userRegisterData);
@@ -56,11 +55,6 @@ export class AuthService {
 
   async login(dto: LoginUserDto): Promise<ITokensResponse> {
     const { login, password } = dto;
-
-    if (!login) {
-      this.logger.warn(`[Login]: Failed user login - login is not pass`);
-      throw new BadRequestException('Enter your login');
-    }
 
     const user = await this.userService.findByLoginWithPassword(login);
 

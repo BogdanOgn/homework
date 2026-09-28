@@ -17,9 +17,6 @@ export const ApiRegister = () => {
     ApiOkResponse({ type: AuthResponseDto }),
     ApiBadRequestResponse({ description: 'Incorrect credentials' }),
     ApiConflictResponse({
-      description: 'User with this email already existing',
-    }),
-    ApiConflictResponse({
       description: 'User with this login already existing',
     }),
     Throttle({ default: { limit: 3, ttl: 60000 } }),

@@ -18,7 +18,7 @@ export class UserResponseDto {
 
   @ApiProperty({
     description: 'User email',
-    example: 'johndoe.gmail.com',
+    example: 'johndoe@gmail.com',
   })
   @IsString()
   email!: string;
