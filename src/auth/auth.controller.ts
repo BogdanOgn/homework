@@ -4,7 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { RegisterUserDto } from './dto/register-user.dto.js';
 import { LoginUserDto } from './dto/login-user.dto.js';
 import type { Response } from 'express';
-import { Authorized } from './decorators/authorizade.decorator.js';
+import { AuthorizedUserData } from './decorators/authorized-user-data.decorator.js';
 import type { User } from '../generated/prisma/client.js';
 import type { RefreshAuthorizedUser } from '@features/user/types/user.types.js';
 import { TokenService } from '@features/token/token.service.js';
@@ -61,7 +61,7 @@ export class AuthController {
 
   @ApiLogout()
   async logout(
-    @Authorized() user: RefreshAuthorizedUser,
+    @AuthorizedUserData() user: RefreshAuthorizedUser,
     @Res({ passthrough: true }) res: Response,
   ): Promise<string> {
     res.clearCookie('refreshToken', this.tokenService.getRefreshTokenCookie());
@@ -73,7 +73,7 @@ export class AuthController {
 
   @ApiLogoutAll()
   async logoutAll(
-    @Authorized() user: User,
+    @AuthorizedUserData() user: User,
     @Res({ passthrough: true }) res: Response,
   ): Promise<string> {
     res.clearCookie('refreshToken', this.tokenService.getRefreshTokenCookie());
@@ -87,7 +87,7 @@ export class AuthController {
 
   @ApiRefresh()
   async refresh(
-    @Authorized() user: RefreshAuthorizedUser,
+    @AuthorizedUserData() user: RefreshAuthorizedUser,
     @Res({ passthrough: true }) res: Response,
   ): Promise<IAccessTokenResponse> {
     const { accessToken, refreshToken } = await this.authService.refresh(

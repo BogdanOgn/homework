@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository.js';
 import type {
   ICreateUserData,
-  IUpdateUserData,
+  UpdateUserData,
   UserResponse,
   UserResponseWithPassword,
 } from './types/user.types.js';
@@ -53,7 +53,7 @@ export class UserService {
   }
 
   async update(id: string, dto: UserUpdateDto): Promise<UserResponse> {
-    const updatedData: IUpdateUserData = dto.password
+    const updatedData: UpdateUserData = dto.password
       ? { ...dto, password: await bcrypt.hash(dto.password, 10) }
       : dto;
 

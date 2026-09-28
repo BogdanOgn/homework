@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   ICreateUserData,
-  IUpdateUserData,
+  UpdateUserData,
   UserResponse,
   UserResponseWithPassword,
 } from './types/user.types.js';
@@ -116,7 +116,7 @@ export class UserRepository {
     });
   }
 
-  async update(id: string, dto: IUpdateUserData): Promise<UserResponse> {
+  async update(id: string, dto: UpdateUserData): Promise<UserResponse> {
     const user = await this.prismaService.user.update({
       omit: {
         password: true,

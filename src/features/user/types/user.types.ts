@@ -8,7 +8,7 @@ export interface ICreateUserData {
   aboutDescription?: string;
 }
 
-export type IUpdateUserData = Partial<ICreateUserData>;
+export type UpdateUserData = Partial<ICreateUserData>;
 
 export type UserResponse = Omit<User, 'password'>;
 

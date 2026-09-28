@@ -7,7 +7,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Authorized } from '@auth/decorators/authorizade.decorator.js';
+import { AuthorizedUserData } from '@auth/decorators/authorized-user-data.decorator.js';
 import type { User } from '@generated/prisma/client.js';
 import { UserService } from './user.service.js';
 import {
@@ -17,7 +17,7 @@ import {
   ApiUpdate,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
-import { UserResponse } from './types/user.types.js';
+import type { UserResponse } from './types/user.types.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 
@@ -37,7 +37,7 @@ export class UserController {
   @ApiDelete()
   async delete(
     @Param('id') id: string,
-    @Authorized() user: User,
+    @AuthorizedUserData() user: User,
   ): Promise<string> {
     if (user.id !== id) {
       throw new ForbiddenException('Forbidden access');
@@ -51,7 +51,7 @@ export class UserController {
   async update(
     @Param('id') id: string,
     @Body() dto: UserUpdateDto,
-    @Authorized() user: User,
+    @AuthorizedUserData() user: User,
   ): Promise<UserResponse> {
     if (user.id !== id) {
       throw new ForbiddenException('Forbidden access');
@@ -61,7 +61,7 @@ export class UserController {
   }
 
   @ApiMe()
-  me(@Authorized() user: User): User {
+  me(@AuthorizedUserData() user: User): UserResponse {
     this.logger.log(`[Me]: Get current user accout - ${user.id}`);
 
     return user;
