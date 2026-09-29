@@ -6,6 +6,7 @@ import { UserModule } from './features/user/user.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { APP_GUARD } from '@nestjs/core';
 import { TokenModule } from '@features/token/token.module.js';
+import { FilesModule } from '@providers/files/files.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TokenModule } from '@features/token/token.module.js';
     UserModule,
     AuthModule,
     TokenModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [
