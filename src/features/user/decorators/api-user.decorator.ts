@@ -96,7 +96,7 @@ export const ApiAvatarUpload = () => {
     }),
     ApiBearerAuth(),
     Throttle({ default: { limit: 3, ttl: 60000 } }),
-    Post('upload-avatar/:id'),
+    Post(':userId/avatar'),
     HttpCode(HttpStatus.CREATED),
   );
 };
@@ -116,7 +116,7 @@ export const ApiAvatarDelete = () => {
 export const ApiAvatarFindAll = () => {
   return applyDecorators(
     ApiOkResponse({
-      type: UserUploadAvatarDto,
+      type: UserUploadAvatarResponseDto,
       isArray: true,
     }),
     Get(':userId/avatars'),

@@ -3,15 +3,10 @@ import { IFileService } from '@providers/files/files.adapter.js';
 import { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.interface.js';
 import { changeFileName } from './utils/change-file-name.util.js';
 import { FOLDERS } from './enums/folder.enum.js';
-import { ImagesRepository } from './images.repository.js';
-import { UserAvatarFilters } from '@features/user/dto/user-avatar-filters.dto.js';
 
 @Injectable()
 export class ImagesService {
-  constructor(
-    private readonly fileService: IFileService,
-    private readonly imagesRepository: ImagesRepository,
-  ) {}
+  constructor(private readonly fileService: IFileService) {}
 
   async uploadImage(file: IUploadedMulterFile, folder: FOLDERS) {
     const name = changeFileName(file.originalname);
@@ -21,13 +16,5 @@ export class ImagesService {
       folder,
       name,
     });
-  }
-
-  async findImagesByUserId(userId: string) {
-    return await this.imagesRepository.findImagesByUserId(userId);
-  }
-
-  async findAllImagesByUserId(userId: string, filters: UserAvatarFilters) {
-    return await this.imagesRepository.findAllImagesByUserId(userId, filters);
   }
 }

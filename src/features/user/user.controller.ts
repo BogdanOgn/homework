@@ -78,7 +78,7 @@ export class UserController {
 
   @ApiAvatarUpload()
   async avatarUpload(
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -90,7 +90,7 @@ export class UserController {
     file: IUploadedMulterFile,
     @AuthorizedUserData() user: User,
   ): Promise<UserUploadAvatarResponse> {
-    if (user.id !== id) {
+    if (user.id !== userId) {
       throw new ForbiddenException('Forbidden access');
     }
     this.logger.log(
@@ -108,7 +108,7 @@ export class UserController {
     if (user.id !== userId) {
       throw new ForbiddenException('Forbidden access');
     }
-    await this.userService.avatarSoftDelete(avatarId);
+    await this.userService.avatarSoftDelete(avatarId, userId);
 
     this.logger.log(
       `[Avatar Delete]: Soft delete avatar for user with id - ${user.id}`,
@@ -120,7 +120,7 @@ export class UserController {
   async avatarFindAll(
     @Query() filters: UserAvatarFilters,
     @Param('userId') userId: string,
-  ) {
+  ): Promise<UserUploadAvatarResponse[]> {
     this.logger.log(
       `[Avatar Find All]: Find all avatars for user with id - ${userId}`,
     );

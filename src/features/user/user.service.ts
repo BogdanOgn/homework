@@ -74,7 +74,7 @@ export class UserService {
     file: IUploadedMulterFile,
     userId: string,
   ): Promise<UserUploadAvatarResponse> {
-    const images = await this.imagesService.findImagesByUserId(userId);
+    const images = await this.userRepository.findAvatarsByUserId(userId);
     if (images.length >= 5) {
       throw new UnprocessableEntityException('Image upload limit exceeded');
     }
@@ -92,12 +92,15 @@ export class UserService {
     }
   }
 
-  async avatarSoftDelete(avatarId: string) {
-    await this.userRepository.avatarSoftDelete(avatarId);
+  async avatarSoftDelete(avatarId: string, userId: string): Promise<string> {
+    await this.userRepository.avatarSoftDelete(avatarId, userId);
     return 'OK';
   }
 
-  async avatarFindAll(userId: string, filters: UserAvatarFilters) {
-    return await this.imagesService.findAllImagesByUserId(userId, filters);
+  async avatarFindAll(
+    userId: string,
+    filters: UserAvatarFilters,
+  ): Promise<UserUploadAvatarResponse[]> {
+    return await this.userRepository.findAvatarsByUserId(userId, filters);
   }
 }

@@ -5,11 +5,13 @@ import type {
   UpdateUserData,
   UserResponse,
   UserResponseWithPassword,
+  UserUploadAvatarResponse,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { SORT_BY } from './enums/sort-by.enum.js';
 import { SORT_ORDER } from './enums/sort-order.enum.js';
+import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 
 @Injectable()
 export class UserRepository {
@@ -157,7 +159,26 @@ export class UserRepository {
     return user;
   }
 
-  async avatarUpload(userId: string, path: string) {
+  async findAvatarsByUserId(
+    userId: string,
+    filters?: UserAvatarFilters,
+  ): Promise<UserUploadAvatarResponse[]> {
+    const hasDeleted = filters?.hasDeleted ? {} : { deletedAt: null };
+
+    const avatars = await this.prismaService.avatar.findMany({
+      where: {
+        userId,
+        ...hasDeleted,
+      },
+    });
+
+    return avatars;
+  }
+
+  async avatarUpload(
+    userId: string,
+    path: string,
+  ): Promise<UserUploadAvatarResponse> {
     const avatar = await this.prismaService.avatar.create({
       data: {
         userId,
@@ -168,16 +189,15 @@ export class UserRepository {
     return avatar;
   }
 
-  async avatarSoftDelete(avatarId: string) {
-    const avatar = await this.prismaService.avatar.update({
+  async avatarSoftDelete(avatarId: string, userId: string): Promise<void> {
+    await this.prismaService.avatar.updateMany({
       where: {
         id: avatarId,
+        userId,
       },
       data: {
         deletedAt: new Date(),
       },
     });
-
-    return avatar;
   }
 }

@@ -17,8 +17,8 @@ export class UserUploadAvatarResponseDto {
   userId!: string;
 
   @ApiProperty({
-    description: 'Image ID',
-    example: '55f31f89-7f31-4db2-b621-087097fceaff',
+    description: 'Image path',
+    example: 'avatars/3fe55edf-6f91-4267-aea1-17caa185aaed.jpg',
   })
   @IsString()
   path!: string;
