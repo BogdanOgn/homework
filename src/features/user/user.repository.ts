@@ -50,7 +50,11 @@ export class UserRepository {
         },
         where,
         include: {
-          avatars: true,
+          avatars: {
+            where: {
+              deletedAt: null,
+            },
+          },
         },
         take: pageSize,
         skip: (page - 1) * pageSize,
@@ -112,7 +116,11 @@ export class UserRepository {
       },
       where: { id, deletedAt: null },
       include: {
-        avatars: true,
+        avatars: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     });
 
@@ -154,6 +162,19 @@ export class UserRepository {
       data: {
         userId,
         path,
+      },
+    });
+
+    return avatar;
+  }
+
+  async avatarSoftDelete(avatarId: string) {
+    const avatar = await this.prismaService.avatar.update({
+      where: {
+        id: avatarId,
+      },
+      data: {
+        deletedAt: new Date(),
       },
     });
 

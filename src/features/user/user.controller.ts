@@ -20,6 +20,7 @@ import {
   ApiDelete,
   ApiUpdate,
   ApiAvatarUpload,
+  ApiAvatarDelete,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import type {
@@ -94,6 +95,23 @@ export class UserController {
       `[Avatar Upload]: Upload avatar for user with id - ${user.id}`,
     );
     return this.userService.avatarUpload(file, user.id);
+  }
+
+  @ApiAvatarDelete()
+  async avatarDelete(
+    @Param('userId') userId: string,
+    @Param('avatarId') avatarId: string,
+    @AuthorizedUserData() user: User,
+  ): Promise<string> {
+    if (user.id !== userId) {
+      throw new ForbiddenException('Forbidden access');
+    }
+    await this.userService.avatarSoftDelete(avatarId);
+
+    this.logger.log(
+      `[Avatar Delete]: Soft delete avatar for user with id - ${user.id}`,
+    );
+    return 'OK';
   }
 
   @ApiMe()

@@ -100,3 +100,16 @@ export const ApiAvatarUpload = () => {
     HttpCode(HttpStatus.CREATED),
   );
 };
+export const ApiAvatarDelete = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiOkResponse({
+      description: 'Avatar soft deleted',
+      schema: { type: 'string', example: 'OK' },
+    }),
+    ApiBearerAuth(),
+    Delete(':userId/avatar/:avatarId'),
+    HttpCode(HttpStatus.OK),
+  );
+};

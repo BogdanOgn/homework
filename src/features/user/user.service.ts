@@ -90,4 +90,9 @@ export class UserService {
       throw new BadGatewayException('The file could not be uploaded');
     }
   }
+
+  async avatarSoftDelete(avatarId: string) {
+    await this.userRepository.avatarSoftDelete(avatarId);
+    return 'OK';
+  }
 }
