@@ -4,6 +4,7 @@ import { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.
 import { changeFileName } from './utils/change-file-name.util.js';
 import { FOLDERS } from './enums/folder.enum.js';
 import { ImagesRepository } from './images.repository.js';
+import { UserAvatarFilters } from '@features/user/dto/user-avatar-filters.dto.js';
 
 @Injectable()
 export class ImagesService {
@@ -23,8 +24,10 @@ export class ImagesService {
   }
 
   async findImagesByUserId(userId: string) {
-    const images = await this.imagesRepository.findImagesByUserId(userId);
+    return await this.imagesRepository.findImagesByUserId(userId);
+  }
 
-    return images;
+  async findAllImagesByUserId(userId: string, filters: UserAvatarFilters) {
+    return await this.imagesRepository.findAllImagesByUserId(userId, filters);
   }
 }

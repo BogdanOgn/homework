@@ -21,6 +21,7 @@ import {
   ApiUpdate,
   ApiAvatarUpload,
   ApiAvatarDelete,
+  ApiAvatarFindAll,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import type {
@@ -31,6 +32,7 @@ import { UserUpdateDto } from './dto/user-update.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { IFileService } from '@providers/files/files.adapter.js';
 import type { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.interface.js';
+import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 
 @ApiTags('User')
 @Controller('user')
@@ -112,6 +114,17 @@ export class UserController {
       `[Avatar Delete]: Soft delete avatar for user with id - ${user.id}`,
     );
     return 'OK';
+  }
+
+  @ApiAvatarFindAll()
+  async avatarFindAll(
+    @Query() filters: UserAvatarFilters,
+    @Param('userId') userId: string,
+  ) {
+    this.logger.log(
+      `[Avatar Find All]: Find all avatars for user with id - ${userId}`,
+    );
+    return await this.userService.avatarFindAll(userId, filters);
   }
 
   @ApiMe()

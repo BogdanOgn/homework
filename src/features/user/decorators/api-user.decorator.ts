@@ -113,3 +113,13 @@ export const ApiAvatarDelete = () => {
     HttpCode(HttpStatus.OK),
   );
 };
+export const ApiAvatarFindAll = () => {
+  return applyDecorators(
+    ApiOkResponse({
+      type: UserUploadAvatarDto,
+      isArray: true,
+    }),
+    Get(':userId/avatars'),
+    HttpCode(HttpStatus.OK),
+  );
+};

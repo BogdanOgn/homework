@@ -19,6 +19,7 @@ import * as bcrypt from 'bcrypt';
 import { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.interface.js';
 import { ImagesService } from '@features/images/images.service.js';
 import { FOLDERS } from '@features/images/enums/folder.enum.js';
+import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 
 @Injectable()
 export class UserService {
@@ -94,5 +95,9 @@ export class UserService {
   async avatarSoftDelete(avatarId: string) {
     await this.userRepository.avatarSoftDelete(avatarId);
     return 'OK';
+  }
+
+  async avatarFindAll(userId: string, filters: UserAvatarFilters) {
+    return await this.imagesService.findAllImagesByUserId(userId, filters);
   }
 }
