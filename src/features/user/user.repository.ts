@@ -49,6 +49,9 @@ export class UserRepository {
           password: true,
         },
         where,
+        include: {
+          avatars: true,
+        },
         take: pageSize,
         skip: (page - 1) * pageSize,
         orderBy,
@@ -70,6 +73,9 @@ export class UserRepository {
         password: true,
       },
       where: { email },
+      include: {
+        avatars: true,
+      },
     });
 
     return user;
@@ -81,6 +87,9 @@ export class UserRepository {
         password: true,
       },
       where: { login },
+      include: {
+        avatars: true,
+      },
     });
 
     return user;
@@ -102,6 +111,9 @@ export class UserRepository {
         password: true,
       },
       where: { id, deletedAt: null },
+      include: {
+        avatars: true,
+      },
     });
 
     return user;
@@ -129,8 +141,22 @@ export class UserRepository {
         password: dto.password,
         age: dto.age,
       },
+      include: {
+        avatars: true,
+      },
     });
 
     return user;
+  }
+
+  async avatarUpload(userId: string, path: string) {
+    const avatar = await this.prismaService.avatar.create({
+      data: {
+        userId,
+        path,
+      },
+    });
+
+    return avatar;
   }
 }

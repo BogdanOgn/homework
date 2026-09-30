@@ -15,6 +15,7 @@ export class S3Service extends IFileService {
   private readonly logger = new Logger(S3Service.name);
 
   private readonly bucketName: string;
+  private readonly s3Endpoint: string;
 
   constructor(
     @Inject(S3Lib) private readonly S3: AWS.S3,
@@ -22,6 +23,7 @@ export class S3Service extends IFileService {
   ) {
     super();
     this.bucketName = configService.getOrThrow<string>('S3_BUCKET_NAME');
+    this.s3Endpoint = configService.getOrThrow<string>('S3_ENDPOINT');
   }
 
   async uploadFile(dto: UploadFilePayloadDto): Promise<UploadFileResultDto> {
@@ -44,6 +46,7 @@ export class S3Service extends IFileService {
             this.logger.log('✅ Uploading was successful');
             resolve({
               path,
+              fileName: name,
             });
           } else {
             this.logger.error(`❌ File upload error with path: ${path}`);

@@ -1,22 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { UserRepository } from './user.repository.js';
 import type {
   ICreateUserData,
   UpdateUserData,
   UserResponse,
   UserResponseWithPassword,
+  UserUploadAvatarResponse,
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { TokenService } from '@features/token/token.service.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 import * as bcrypt from 'bcrypt';
+import { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.interface.js';
+import { ImagesService } from '@features/images/images.service.js';
+import { FOLDERS } from '@features/images/enums/folder.enum.js';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly tokenService: TokenService,
+    private readonly imagesService: ImagesService,
   ) {}
 
   async create(dto: ICreateUserData): Promise<UserResponse> {
@@ -58,5 +67,27 @@ export class UserService {
       : dto;
 
     return await this.userRepository.update(id, updatedData);
+  }
+
+  async avatarUpload(
+    file: IUploadedMulterFile,
+    userId: string,
+  ): Promise<UserUploadAvatarResponse> {
+    const images = await this.imagesService.findImagesByUserId(userId);
+    if (images.length >= 5) {
+      throw new UnprocessableEntityException('Image upload limit exceeded');
+    }
+    try {
+      const { path } = await this.imagesService.uploadImage(
+        file,
+        FOLDERS.AVATARS,
+      );
+
+      const avatar = await this.userRepository.avatarUpload(userId, path);
+
+      return { ...avatar };
+    } catch {
+      throw new BadGatewayException('The file could not be uploaded');
+    }
   }
 }

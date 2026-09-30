@@ -5,9 +5,13 @@ import {
   HttpCode,
   HttpStatus,
   Patch,
+  Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
@@ -16,6 +20,9 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AccessTokenAuthorization } from '@auth/decorators/authorization.decorator.js';
 import { UserResponseDto } from '@features/user/dto/user-response.dto.js';
 import { UsersListResponseDto } from '../dto/users-list-response.dto.js';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UserUploadAvatarResponseDto } from '../dto/user-upload-avatar-response.dto.js';
+import { UserUploadAvatarDto } from '../dto/user-upload-avatar.dto.js';
 
 export const ApiMe = () => {
   return applyDecorators(
@@ -75,5 +82,21 @@ export const ApiUpdate = () => {
     Throttle({ default: { limit: 10, ttl: 60000 } }),
     Patch(':id'),
     HttpCode(HttpStatus.OK),
+  );
+};
+export const ApiAvatarUpload = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiOkResponse({ type: UserUploadAvatarResponseDto }),
+    UseInterceptors(FileInterceptor('file')),
+    ApiConsumes('multipart/form-data'),
+    ApiBody({
+      type: UserUploadAvatarDto,
+    }),
+    ApiBearerAuth(),
+    Throttle({ default: { limit: 3, ttl: 60000 } }),
+    Post('upload-avatar/:id'),
+    HttpCode(HttpStatus.CREATED),
   );
 };
