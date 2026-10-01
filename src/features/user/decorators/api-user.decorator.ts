@@ -23,7 +23,7 @@ import { UsersListResponseDto } from '../dto/users-list-response.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserUploadAvatarResponseDto } from '../dto/user-upload-avatar-response.dto.js';
 import { UserUploadAvatarDto } from '../dto/user-upload-avatar.dto.js';
-import { UserActiveResponseDto } from '../dto/user-active-response.dto.js';
+import { UsersListActiveResponseDto } from '../dto/users-list-active-response.dto.js';
 
 export const ApiMe = () => {
   return applyDecorators(
@@ -147,7 +147,7 @@ export const ApiFindActiveUsers = () => {
       summary: 'Get all active users',
     }),
     ApiOkResponse({
-      type: UserActiveResponseDto,
+      type: UsersListActiveResponseDto,
       isArray: true,
     }),
     Get('/active'),

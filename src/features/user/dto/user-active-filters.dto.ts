@@ -17,4 +17,20 @@ export class UserActiveFiltersDto {
   @Type(() => Number)
   @IsInt()
   maxAge?: number;
+
+  @ApiPropertyOptional({
+    description: 'current page',
+    default: 1,
+  })
+  @Type(() => Number)
+  @IsInt()
+  page?: number;
+
+  @ApiPropertyOptional({
+    description: 'page size',
+    default: 10,
+  })
+  @Type(() => Number)
+  @IsInt()
+  pageSize?: number;
 }

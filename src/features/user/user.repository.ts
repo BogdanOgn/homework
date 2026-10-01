@@ -4,7 +4,6 @@ import type {
   ICreateUserData,
   UpdateUserData,
   UserResponse,
-  UserResponseWithAvatars,
   UserResponseWithPassword,
   UserUploadAvatarResponse,
 } from './types/user.types.js';
@@ -14,6 +13,7 @@ import { SORT_BY } from './enums/sort-by.enum.js';
 import { SORT_ORDER } from './enums/sort-order.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
+import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 
 @Injectable()
 export class UserRepository {
@@ -205,32 +205,63 @@ export class UserRepository {
 
   async findActiveUsers(
     filters: UserActiveFiltersDto,
-  ): Promise<UserResponseWithAvatars[]> {
-    const users = await this.prismaService.user.findMany({
-      omit: {
-        password: true,
-      },
-      where: {
-        aboutDescription: { not: null },
-        deletedAt: null,
-        age: {
-          gte: filters.minAge,
-          lte: filters.maxAge,
-        },
-      },
-      include: {
-        avatars: {
-          where: {
-            deletedAt: null,
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-          take: -1,
-        },
+  ): Promise<UsersListActiveResponseDto> {
+    const pageSize = filters.pageSize ?? 10;
+    const page = filters.page ?? 1;
+
+    const usersWithAvatars = await this.prismaService.avatar.groupBy({
+      by: ['userId'],
+      where: { deletedAt: null },
+      having: {
+        id: { _count: { gte: 2 } },
       },
     });
 
-    return users;
+    const usersIdsWithAvatars = usersWithAvatars.map((user) => user.userId);
+
+    const where = {
+      id: {
+        in: usersIdsWithAvatars,
+      },
+      aboutDescription: { not: null },
+      deletedAt: null,
+      age: {
+        gte: filters.minAge,
+        lte: filters.maxAge,
+      },
+    } as const;
+
+    const [total, users] = await Promise.all([
+      this.prismaService.user.count({ where }),
+      this.prismaService.user.findMany({
+        omit: {
+          password: true,
+        },
+        where,
+
+        include: {
+          avatars: {
+            where: {
+              deletedAt: null,
+            },
+            orderBy: {
+              createdAt: 'asc',
+            },
+            take: -1,
+          },
+        },
+
+        take: pageSize,
+        skip: (page - 1) * pageSize,
+      }),
+    ]);
+
+    return {
+      users,
+      total,
+      pageSize,
+      page,
+      pages: total > 0 ? Math.ceil(total / pageSize) : 0,
+    };
   }
 }
