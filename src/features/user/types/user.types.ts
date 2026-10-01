@@ -12,6 +12,10 @@ export type UpdateUserData = Partial<ICreateUserData>;
 
 export type UserUploadAvatarResponse = Avatar;
 
+export type UserResponseWithAvatars = UserResponse & {
+  avatars: UserUploadAvatarResponse[];
+};
+
 export type UserResponse = Omit<User, 'password'>;
 
 export type UserResponseWithPassword = User;

@@ -22,10 +22,12 @@ import {
   ApiAvatarUpload,
   ApiAvatarDelete,
   ApiAvatarFindAll,
+  ApiFindActiveUsers,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import type {
   UserResponse,
+  UserResponseWithAvatars,
   UserUploadAvatarResponse,
 } from './types/user.types.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
@@ -33,6 +35,7 @@ import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { IFileService } from '@providers/files/files.adapter.js';
 import type { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.interface.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
+import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 
 @ApiTags('User')
 @Controller('user')
@@ -132,5 +135,14 @@ export class UserController {
     this.logger.log(`[Me]: Get current user accout - ${user.id}`);
 
     return user;
+  }
+
+  @ApiFindActiveUsers()
+  async findActiveUsers(
+    @Query() filters: UserActiveFiltersDto,
+  ): Promise<UserResponseWithAvatars[]> {
+    this.logger.log('[FindActiveUsers]: Get active users');
+
+    return this.userService.findActiveUsers(filters);
   }
 }

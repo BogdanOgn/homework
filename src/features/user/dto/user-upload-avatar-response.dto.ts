@@ -32,7 +32,7 @@ export class UserUploadAvatarResponseDto {
 
   @ApiPropertyOptional({
     description: 'Image deleted at',
-    example: '2026-10-29T19:14:15.050Z',
+    example: null,
   })
   @IsDate()
   deletedAt?: Date;

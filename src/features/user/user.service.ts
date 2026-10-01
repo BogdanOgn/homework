@@ -8,6 +8,7 @@ import type {
   ICreateUserData,
   UpdateUserData,
   UserResponse,
+  UserResponseWithAvatars,
   UserResponseWithPassword,
   UserUploadAvatarResponse,
 } from './types/user.types.js';
@@ -20,6 +21,7 @@ import { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.
 import { ImagesService } from '@features/images/images.service.js';
 import { FOLDERS } from '@features/images/enums/folder.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
+import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 
 @Injectable()
 export class UserService {
@@ -102,5 +104,11 @@ export class UserService {
     filters: UserAvatarFilters,
   ): Promise<UserUploadAvatarResponse[]> {
     return await this.userRepository.findAvatarsByUserId(userId, filters);
+  }
+
+  async findActiveUsers(
+    filters: UserActiveFiltersDto,
+  ): Promise<UserResponseWithAvatars[]> {
+    return await this.userRepository.findActiveUsers(filters);
   }
 }

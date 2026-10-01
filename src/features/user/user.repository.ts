@@ -4,6 +4,7 @@ import type {
   ICreateUserData,
   UpdateUserData,
   UserResponse,
+  UserResponseWithAvatars,
   UserResponseWithPassword,
   UserUploadAvatarResponse,
 } from './types/user.types.js';
@@ -12,6 +13,7 @@ import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import { SORT_BY } from './enums/sort-by.enum.js';
 import { SORT_ORDER } from './enums/sort-order.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
+import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 
 @Injectable()
 export class UserRepository {
@@ -199,5 +201,36 @@ export class UserRepository {
         deletedAt: new Date(),
       },
     });
+  }
+
+  async findActiveUsers(
+    filters: UserActiveFiltersDto,
+  ): Promise<UserResponseWithAvatars[]> {
+    const users = await this.prismaService.user.findMany({
+      omit: {
+        password: true,
+      },
+      where: {
+        aboutDescription: { not: null },
+        deletedAt: null,
+        age: {
+          gte: filters.minAge,
+          lte: filters.maxAge,
+        },
+      },
+      include: {
+        avatars: {
+          where: {
+            deletedAt: null,
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+          take: -1,
+        },
+      },
+    });
+
+    return users;
   }
 }
