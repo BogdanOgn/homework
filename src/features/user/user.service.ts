@@ -8,7 +8,6 @@ import type {
   ICreateUserData,
   UpdateUserData,
   UserResponse,
-  UserResponseWithAvatars,
   UserResponseWithPassword,
   UserUploadAvatarResponse,
 } from './types/user.types.js';
@@ -22,6 +21,7 @@ import { ImagesService } from '@features/images/images.service.js';
 import { FOLDERS } from '@features/images/enums/folder.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
+import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 
 @Injectable()
 export class UserService {
@@ -108,7 +108,7 @@ export class UserService {
 
   async findActiveUsers(
     filters: UserActiveFiltersDto,
-  ): Promise<UserResponseWithAvatars[]> {
+  ): Promise<UsersListActiveResponseDto> {
     return await this.userRepository.findActiveUsers(filters);
   }
 }
