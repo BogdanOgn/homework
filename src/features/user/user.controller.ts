@@ -22,6 +22,7 @@ import {
   ApiAvatarDelete,
   ApiAvatarFindAll,
   ApiFindActiveUsers,
+  ApiAvatarRestore,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import type {
@@ -111,6 +112,22 @@ export class UserController {
       `[Avatar Delete]: Soft delete avatar for user with id - ${user.id}`,
     );
     return 'OK';
+  }
+
+  @ApiAvatarRestore()
+  async avatarRestore(
+    @Param('userId') userId: string,
+    @Param('avatarId') avatarId: string,
+    @AuthorizedUserData() user: User,
+  ): Promise<UserUploadAvatarResponse> {
+    if (user.id !== userId) {
+      throw new ForbiddenException('Forbidden access');
+    }
+
+    this.logger.log(
+      `[AvatarRestore]: Restore avatar with id - ${avatarId} for user with id - ${user.id}`,
+    );
+    return await this.userService.avatarRestore(avatarId, userId);
   }
 
   @ApiAvatarFindAll()

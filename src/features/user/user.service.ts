@@ -1,6 +1,7 @@
 import {
   BadGatewayException,
   Injectable,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { UserRepository } from './user.repository.js';
@@ -97,6 +98,25 @@ export class UserService {
   async avatarSoftDelete(avatarId: string, userId: string): Promise<string> {
     await this.userRepository.avatarSoftDelete(avatarId, userId);
     return 'OK';
+  }
+
+  async avatarRestore(
+    avatarId: string,
+    userId: string,
+  ): Promise<UserUploadAvatarResponse> {
+    const images = await this.userRepository.findAvatarsByUserId(userId);
+    if (images.length >= 5) {
+      throw new UnprocessableEntityException('Image upload limit exceeded');
+    }
+
+    const deletedAvatar =
+      await this.userRepository.findDeletedAvatarById(avatarId);
+
+    if (!deletedAvatar) {
+      throw new NotFoundException('Deleted image not found');
+    }
+
+    return await this.userRepository.avatarRestore(avatarId, userId);
   }
 
   async avatarFindAll(

@@ -177,6 +177,19 @@ export class UserRepository {
     return avatars;
   }
 
+  async findDeletedAvatarById(
+    avatarId: string,
+  ): Promise<UserUploadAvatarResponse | null> {
+    const avatar = await this.prismaService.avatar.findFirst({
+      where: {
+        id: avatarId,
+        deletedAt: { not: null },
+      },
+    });
+
+    return avatar;
+  }
+
   async avatarUpload(
     userId: string,
     path: string,
@@ -199,6 +212,21 @@ export class UserRepository {
       },
       data: {
         deletedAt: new Date(),
+      },
+    });
+  }
+
+  async avatarRestore(
+    avatarId: string,
+    userId: string,
+  ): Promise<UserUploadAvatarResponse> {
+    return await this.prismaService.avatar.update({
+      where: {
+        id: avatarId,
+        userId,
+      },
+      data: {
+        deletedAt: null,
       },
     });
   }

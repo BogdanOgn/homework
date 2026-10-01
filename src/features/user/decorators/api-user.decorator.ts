@@ -122,7 +122,24 @@ export const ApiAvatarDelete = () => {
       schema: { type: 'string', example: 'OK' },
     }),
     ApiBearerAuth(),
-    Delete(':userId/avatar/:avatarId'),
+    Delete(':userId/avatar/:avatarId/delete'),
+    HttpCode(HttpStatus.OK),
+  );
+};
+
+export const ApiAvatarRestore = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'Restore user avatar',
+    }),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiOkResponse({
+      description: 'Avatar resotre',
+      type: UserUploadAvatarResponseDto,
+    }),
+    ApiBearerAuth(),
+    Patch(':userId/avatar/:avatarId/restore'),
     HttpCode(HttpStatus.OK),
   );
 };
