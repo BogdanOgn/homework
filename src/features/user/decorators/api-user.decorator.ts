@@ -54,6 +54,7 @@ export const ApiFindAll = () => {
     HttpCode(HttpStatus.OK),
   );
 };
+
 export const ApiDelete = () => {
   return applyDecorators(
     AccessTokenAuthorization(),
@@ -71,6 +72,7 @@ export const ApiDelete = () => {
     HttpCode(HttpStatus.OK),
   );
 };
+
 export const ApiUpdate = () => {
   return applyDecorators(
     AccessTokenAuthorization(),
@@ -85,12 +87,18 @@ export const ApiUpdate = () => {
     HttpCode(HttpStatus.OK),
   );
 };
+
 export const ApiAvatarUpload = () => {
   return applyDecorators(
     AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'Upload user avatar',
+    }),
     ApiUnauthorizedResponse({ description: 'Unauthorization' }),
     ApiOkResponse({ type: UserUploadAvatarResponseDto }),
-    UseInterceptors(FileInterceptor('file')),
+    UseInterceptors(
+      FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }),
+    ),
     ApiConsumes('multipart/form-data'),
     ApiBody({
       type: UserUploadAvatarDto,
@@ -101,9 +109,13 @@ export const ApiAvatarUpload = () => {
     HttpCode(HttpStatus.CREATED),
   );
 };
+
 export const ApiAvatarDelete = () => {
   return applyDecorators(
     AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'Soft delete user avatar',
+    }),
     ApiUnauthorizedResponse({ description: 'Unauthorization' }),
     ApiOkResponse({
       description: 'Avatar soft deleted',
@@ -114,8 +126,12 @@ export const ApiAvatarDelete = () => {
     HttpCode(HttpStatus.OK),
   );
 };
+
 export const ApiAvatarFindAll = () => {
   return applyDecorators(
+    ApiOperation({
+      summary: 'Get all user avatars',
+    }),
     ApiOkResponse({
       type: UserUploadAvatarResponseDto,
       isArray: true,
@@ -124,12 +140,17 @@ export const ApiAvatarFindAll = () => {
     HttpCode(HttpStatus.OK),
   );
 };
+
 export const ApiFindActiveUsers = () => {
   return applyDecorators(
+    ApiOperation({
+      summary: 'Get all active users',
+    }),
     ApiOkResponse({
       type: UserActiveResponseDto,
       isArray: true,
     }),
     Get('/active'),
+    HttpCode(HttpStatus.OK),
   );
 };

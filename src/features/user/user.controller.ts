@@ -4,7 +4,6 @@ import {
   FileTypeValidator,
   ForbiddenException,
   Logger,
-  MaxFileSizeValidator,
   Param,
   ParseFilePipe,
   Query,
@@ -32,7 +31,6 @@ import type {
 } from './types/user.types.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
-import { IFileService } from '@providers/files/files.adapter.js';
 import type { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.interface.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
@@ -41,10 +39,7 @@ import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 @Controller('user')
 export class UserController {
   private readonly logger = new Logger('UserController');
-  constructor(
-    private readonly userService: UserService,
-    private readonly fileService: IFileService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @ApiFindAll()
   findAll(@Query() filters: UsersFiltersDto): Promise<UsersListResponseDto> {
@@ -85,7 +80,6 @@ export class UserController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
           new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp)$/ }),
         ],
       }),
