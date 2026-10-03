@@ -8,10 +8,27 @@ import { TokenModule } from './features/token/token.module.js';
 import { ImagesModule } from './features/images/images.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { FilesModule } from './providers/files/files.module.js';
+import { CacheModule } from '@nestjs/cache-manager';
+import KeyvRedis from '@keyv/redis';
+import { Keyv } from 'keyv';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: () => ({
+        stores: [
+          new Keyv({
+            store: new KeyvRedis({
+              url: `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`,
+              password: process.env.REDIS_PASSWORD,
+            }),
+          }),
+        ],
+        ttl: 30000,
+      }),
+    }),
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

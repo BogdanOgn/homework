@@ -1,6 +1,8 @@
 import {
   BadGatewayException,
+  Inject,
   Injectable,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -23,10 +25,14 @@ import { FOLDERS } from '@features/images/enums/folder.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger('UserService');
+
   constructor(
+    @Inject(CACHE_MANAGER) private cache: Cache,
     private readonly userRepository: UserRepository,
     private readonly tokenService: TokenService,
     private readonly imagesService: ImagesService,
@@ -37,7 +43,24 @@ export class UserService {
   }
 
   async findMany(filters: UsersFiltersDto): Promise<UsersListResponseDto> {
-    return this.userRepository.findMany(filters);
+    const cacheKey = `users:${JSON.stringify(filters)}`;
+
+    const cached = await this.cache.get<UsersListResponseDto>(cacheKey);
+
+    if (cached) {
+      this.logger.log(`[Cache Return]: ${cacheKey}`);
+
+      return cached;
+    }
+
+    const users = await this.userRepository.findMany(filters);
+
+    if (users) {
+      await this.cache.set(cacheKey, users, 30000);
+    }
+
+    this.logger.log(`[Cache Miss]: ${cacheKey}`);
+    return users;
   }
 
   async findByEmail(email: string): Promise<UserResponse | null> {
@@ -61,6 +84,7 @@ export class UserService {
   async softDelete(id: string): Promise<string> {
     await this.userRepository.softDelete(id);
     await this.tokenService.deleteManyByUserId(id);
+    await this.cache.del(`user:${id}`);
 
     return 'OK';
   }
@@ -70,7 +94,10 @@ export class UserService {
       ? { ...dto, password: await bcrypt.hash(dto.password, 10) }
       : dto;
 
-    return await this.userRepository.update(id, updatedData);
+    const user = await this.userRepository.update(id, updatedData);
+    await this.cache.del(`user:${id}`);
+
+    return user;
   }
 
   async avatarUpload(
@@ -129,6 +156,23 @@ export class UserService {
   async findActiveUsers(
     filters: UserActiveFiltersDto,
   ): Promise<UsersListActiveResponseDto> {
-    return await this.userRepository.findActiveUsers(filters);
+    const cacheKey = `activeUsers:${JSON.stringify(filters)}`;
+
+    const cached = await this.cache.get<UsersListActiveResponseDto>(cacheKey);
+
+    if (cached) {
+      this.logger.log(`[Cache Return]: ${cacheKey}`);
+
+      return cached;
+    }
+
+    const users = await this.userRepository.findActiveUsers(filters);
+
+    if (users) {
+      await this.cache.set(cacheKey, users, 30000);
+    }
+    this.logger.log(`[Cache Miss]: ${cacheKey}`);
+
+    return users;
   }
 }
