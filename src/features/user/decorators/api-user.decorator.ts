@@ -24,6 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserUploadAvatarResponseDto } from '../dto/user-upload-avatar-response.dto.js';
 import { UserUploadAvatarDto } from '../dto/user-upload-avatar.dto.js';
 import { UsersListActiveResponseDto } from '../dto/users-list-active-response.dto.js';
+import { UserBalanceTransferResponseDto } from '../dto/user-balance-transfer-response.dto.js';
 
 export const ApiMe = () => {
   return applyDecorators(
@@ -168,6 +169,22 @@ export const ApiFindActiveUsers = () => {
       isArray: true,
     }),
     Get('/active'),
+    HttpCode(HttpStatus.OK),
+  );
+};
+
+export const ApiBalanceTransfer = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'Transfer user balance',
+    }),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiBearerAuth(),
+    ApiOkResponse({
+      type: UserBalanceTransferResponseDto,
+    }),
+    Post('balance-transfer'),
     HttpCode(HttpStatus.OK),
   );
 };

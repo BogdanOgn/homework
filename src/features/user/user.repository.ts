@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
+  IBalanceTransferResponse,
   ICreateUserData,
   UpdateUserData,
   UserResponse,
@@ -14,6 +15,7 @@ import { SORT_ORDER } from './enums/sort-order.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
+import { Prisma } from '@generated/prisma/client.js';
 
 @Injectable()
 export class UserRepository {
@@ -290,6 +292,50 @@ export class UserRepository {
       pageSize,
       page,
       pages: total > 0 ? Math.ceil(total / pageSize) : 0,
+    };
+  }
+
+  async balanceTransfer(
+    senderId: string,
+    recipientId: string,
+    sendedBalance: number,
+  ): Promise<IBalanceTransferResponse> {
+    const txData = await this.prismaService.$transaction(
+      async (tx) => {
+        const sender = await tx.user.update({
+          data: {
+            balance: { decrement: sendedBalance },
+          },
+          where: {
+            id: senderId,
+            deletedAt: null,
+            balance: { gte: sendedBalance },
+          },
+        });
+
+        const recipient = await tx.user.update({
+          data: {
+            balance: {
+              increment: sendedBalance,
+            },
+          },
+          where: { id: recipientId, deletedAt: null },
+        });
+
+        return { sender, recipient };
+      },
+      {
+        maxWait: 5000,
+        timeout: 10000,
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
+
+    return {
+      oldBalance: +txData.sender.balance.plus(sendedBalance),
+      newBalance: +txData.sender.balance,
+      senderLogin: txData.sender.login,
+      recipientLogin: txData.recipient.login,
     };
   }
 }

@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Inject,
   Injectable,
   Logger,
@@ -26,6 +27,7 @@ import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 
 @Injectable()
 export class UserService {
@@ -174,5 +176,34 @@ export class UserService {
     this.logger.log(`[Cache Miss]: ${cacheKey}`);
 
     return users;
+  }
+
+  async balanceTransfer(transferDto: UserBalanceTransferDto, userId: string) {
+    const { recipientId, balance } = transferDto;
+
+    if (userId === recipientId) {
+      throw new BadRequestException('Unable to transfer funds to yourself');
+    }
+
+    const senderUser = await this.findById(userId);
+    const recipientUser = await this.findById(recipientId);
+
+    if (!senderUser) {
+      throw new NotFoundException('Sender User not found');
+    }
+
+    if (!recipientUser) {
+      throw new NotFoundException('Recipient User not found');
+    }
+
+    if (+senderUser.balance < balance) {
+      throw new BadRequestException('Not enough balance');
+    }
+
+    return await this.userRepository.balanceTransfer(
+      userId,
+      recipientId,
+      balance,
+    );
   }
 }

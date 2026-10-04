@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsString } from 'class-validator';
+import { IsInt, IsNumber, IsPositive, IsString } from 'class-validator';
 import { UserUploadAvatarResponse } from '../types/user.types.js';
 import { UserUploadAvatarResponseDto } from './user-upload-avatar-response.dto.js';
 
@@ -38,6 +38,14 @@ export class UserActiveResponseDto {
   })
   @IsString()
   aboutDescription?: string;
+
+  @ApiProperty({
+    description: 'User account balance',
+    example: 150.0,
+  })
+  @IsPositive()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  balance!: number;
 
   @ApiProperty({
     description: 'User account created at',

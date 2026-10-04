@@ -8,6 +8,13 @@ export interface ICreateUserData {
   aboutDescription?: string;
 }
 
+export interface IBalanceTransferResponse {
+  oldBalance?: number;
+  newBalance: number;
+  senderLogin: string;
+  recipientLogin: string;
+}
+
 export type UpdateUserData = Partial<ICreateUserData>;
 
 export type UserUploadAvatarResponse = Avatar;

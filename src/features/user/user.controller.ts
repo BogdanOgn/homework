@@ -23,6 +23,7 @@ import {
   ApiAvatarFindAll,
   ApiFindActiveUsers,
   ApiAvatarRestore,
+  ApiBalanceTransfer,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import type {
@@ -35,6 +36,7 @@ import type { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
+import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 
 @ApiTags('User')
 @Controller('user')
@@ -155,5 +157,13 @@ export class UserController {
     this.logger.log('[FindActiveUsers]: Get active users');
 
     return this.userService.findActiveUsers(filters);
+  }
+
+  @ApiBalanceTransfer()
+  async balanceTransfer(
+    @Body() dto: UserBalanceTransferDto,
+    @AuthorizedUserData('id') userId: string,
+  ) {
+    return this.userService.balanceTransfer(dto, userId);
   }
 }
