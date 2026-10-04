@@ -54,6 +54,15 @@ export class UserController {
     return users;
   }
 
+  @ApiFindActiveUsers()
+  async findActiveUsers(
+    @Query() filters: UserActiveFiltersDto,
+  ): Promise<UsersListActiveResponseDto> {
+    this.logger.log('[FindActiveUsers]: Get active users');
+
+    return this.userService.findActiveUsers(filters);
+  }
+
   @ApiDelete()
   async delete(
     @Param('id') id: string,
@@ -80,9 +89,15 @@ export class UserController {
     return await this.userService.update(id, dto);
   }
 
+  @ApiMe()
+  me(@AuthorizedUserData() user: User): UserResponse {
+    this.logger.log(`[Me]: Get current user accout - ${user.id}`);
+
+    return user;
+  }
+
   @ApiAvatarUpload()
   async avatarUpload(
-    @Param('userId') userId: string,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -93,9 +108,6 @@ export class UserController {
     file: IUploadedMulterFile,
     @AuthorizedUserData() user: User,
   ): Promise<UserUploadAvatarResponse> {
-    if (user.id !== userId) {
-      throw new ForbiddenException('Forbidden access');
-    }
     this.logger.log(
       `[Avatar Upload]: Upload avatar for user with id - ${user.id}`,
     );
@@ -104,14 +116,10 @@ export class UserController {
 
   @ApiAvatarDelete()
   async avatarDelete(
-    @Param('userId') userId: string,
     @Param('avatarId') avatarId: string,
     @AuthorizedUserData() user: User,
   ): Promise<string> {
-    if (user.id !== userId) {
-      throw new ForbiddenException('Forbidden access');
-    }
-    await this.userService.avatarSoftDelete(avatarId, userId);
+    await this.userService.avatarSoftDelete(avatarId, user.id);
 
     this.logger.log(
       `[Avatar Delete]: Soft delete avatar for user with id - ${user.id}`,
@@ -121,18 +129,13 @@ export class UserController {
 
   @ApiAvatarRestore()
   async avatarRestore(
-    @Param('userId') userId: string,
     @Param('avatarId') avatarId: string,
     @AuthorizedUserData() user: User,
   ): Promise<UserUploadAvatarResponse> {
-    if (user.id !== userId) {
-      throw new ForbiddenException('Forbidden access');
-    }
-
     this.logger.log(
       `[AvatarRestore]: Restore avatar with id - ${avatarId} for user with id - ${user.id}`,
     );
-    return await this.userService.avatarRestore(avatarId, userId);
+    return await this.userService.avatarRestore(avatarId, user.id);
   }
 
   @ApiAvatarFindAll()
@@ -144,22 +147,6 @@ export class UserController {
       `[Avatar Find All]: Find all avatars for user with id - ${userId}`,
     );
     return await this.userService.avatarFindAll(userId, filters);
-  }
-
-  @ApiMe()
-  me(@AuthorizedUserData() user: User): UserResponse {
-    this.logger.log(`[Me]: Get current user accout - ${user.id}`);
-
-    return user;
-  }
-
-  @ApiFindActiveUsers()
-  async findActiveUsers(
-    @Query() filters: UserActiveFiltersDto,
-  ): Promise<UsersListActiveResponseDto> {
-    this.logger.log('[FindActiveUsers]: Get active users');
-
-    return this.userService.findActiveUsers(filters);
   }
 
   @ApiBalanceTransfer()

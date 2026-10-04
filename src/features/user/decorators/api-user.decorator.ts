@@ -107,7 +107,7 @@ export const ApiAvatarUpload = () => {
     }),
     ApiBearerAuth(),
     Throttle({ default: { limit: 3, ttl: 60000 } }),
-    Post(':userId/avatar'),
+    Post('/avatar'),
     HttpCode(HttpStatus.CREATED),
   );
 };
@@ -124,7 +124,7 @@ export const ApiAvatarDelete = () => {
       schema: { type: 'string', example: 'OK' },
     }),
     ApiBearerAuth(),
-    Delete(':userId/avatar/:avatarId/delete'),
+    Delete('/avatar/:avatarId'),
     HttpCode(HttpStatus.OK),
   );
 };
@@ -141,7 +141,7 @@ export const ApiAvatarRestore = () => {
       type: UserUploadAvatarResponseDto,
     }),
     ApiBearerAuth(),
-    Patch(':userId/avatar/:avatarId/restore'),
+    Patch('/avatar/:avatarId'),
     HttpCode(HttpStatus.OK),
   );
 };
