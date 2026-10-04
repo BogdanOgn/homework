@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { SORT_ORDER } from '../enums/sort-order.enum.js';
-import { SORT_BY } from '../enums/sort-by.enum.js';
+import { SORT_BY_USERS } from '../enums/sort-by.enum.js';
 
 export class UsersFiltersDto {
   @ApiPropertyOptional({
@@ -24,12 +24,12 @@ export class UsersFiltersDto {
 
   @ApiPropertyOptional({
     description: 'user sort by',
-    default: SORT_BY.LOGIN,
-    enum: SORT_BY,
+    default: SORT_BY_USERS.LOGIN,
+    enum: SORT_BY_USERS,
   })
   @IsOptional()
-  @IsEnum(SORT_BY)
-  sortBy?: SORT_BY;
+  @IsEnum(SORT_BY_USERS)
+  sortBy?: SORT_BY_USERS;
 
   @ApiPropertyOptional({
     description: 'current page',

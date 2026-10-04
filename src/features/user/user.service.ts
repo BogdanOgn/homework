@@ -29,6 +29,8 @@ import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
+import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
 
 @Injectable()
 export class UserService {
@@ -206,6 +208,13 @@ export class UserService {
       recipientId,
       balance,
     );
+  }
+
+  async balanceTransferHistory(
+    filters: UserBalanceTransferHistoryFiltersDto,
+    userId: string,
+  ): Promise<UserBalanceTransferHistoryListResponseDto> {
+    return await this.userRepository.getBalanceTransferHistory(filters, userId);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)

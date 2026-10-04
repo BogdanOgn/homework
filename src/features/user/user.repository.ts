@@ -11,13 +11,18 @@ import type {
 } from './types/user.types.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import { UsersListResponseDto } from './dto/users-list-response.dto.js';
-import { SORT_BY } from './enums/sort-by.enum.js';
+import {
+  SORT_BY_BALANCE_TRANSFERS,
+  SORT_BY_USERS,
+} from './enums/sort-by.enum.js';
 import { SORT_ORDER } from './enums/sort-order.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { Prisma } from '@generated/prisma/client.js';
 import { AVATARS_TTL } from './constants/avatars-ttl.constants.js';
+import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
+import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
 
 @Injectable()
 export class UserRepository {
@@ -39,7 +44,8 @@ export class UserRepository {
     const page = filters.page ?? 1;
 
     const orderBy = {
-      [filters.sortBy ?? SORT_BY.LOGIN]: filters.sortOrder ?? SORT_ORDER.ASC,
+      [filters.sortBy ?? SORT_BY_USERS.LOGIN]:
+        filters.sortOrder ?? SORT_ORDER.ASC,
     };
 
     const where = {
@@ -345,6 +351,18 @@ export class UserRepository {
           where: { id: recipientId, deletedAt: null },
         });
 
+        const historyTransferData = {
+          senderId: sender.id,
+          senderLogin: sender.login,
+          recipientId: recipient.id,
+          recipientLogin: recipient.login,
+          sendedBalance,
+        };
+
+        await tx.balanceTransaction.create({
+          data: historyTransferData,
+        });
+
         return { sender, recipient };
       },
       {
@@ -359,6 +377,57 @@ export class UserRepository {
       newBalance: +txData.sender.balance,
       senderLogin: txData.sender.login,
       recipientLogin: txData.recipient.login,
+    };
+  }
+
+  async getBalanceTransferHistory(
+    filters: UserBalanceTransferHistoryFiltersDto,
+    userId: string,
+  ): Promise<UserBalanceTransferHistoryListResponseDto> {
+    const pageSize = filters.pageSize ?? 10;
+    const page = filters.page ?? 1;
+
+    const where = {
+      senderLogin: {
+        contains: filters.search,
+        mode: 'insensitive',
+      },
+      recipientLogin: {
+        contains: filters.search,
+        mode: 'insensitive',
+      },
+      sendedBalance: {
+        gte: filters.minBalance,
+        lte: filters.maxBalance,
+      },
+    } as const;
+
+    const orderBy = {
+      [filters.sortBy ?? SORT_BY_BALANCE_TRANSFERS.CREATED_AT]:
+        filters.sortOrder ?? SORT_ORDER.ASC,
+    };
+
+    const [total, history] = await Promise.all([
+      this.prismaService.balanceTransaction.count({
+        where: {
+          OR: [{ senderId: userId }, { recipientId: userId }],
+          ...where,
+        },
+      }),
+      this.prismaService.balanceTransaction.findMany({
+        where,
+        take: pageSize,
+        skip: (page - 1) * pageSize,
+        orderBy,
+      }),
+    ]);
+
+    return {
+      history,
+      total,
+      pageSize,
+      page,
+      pages: total > 0 ? Math.ceil(total / pageSize) : 0,
     };
   }
 }

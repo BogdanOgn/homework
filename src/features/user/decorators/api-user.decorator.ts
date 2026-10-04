@@ -25,6 +25,7 @@ import { UserUploadAvatarResponseDto } from '../dto/user-upload-avatar-response.
 import { UserUploadAvatarDto } from '../dto/user-upload-avatar.dto.js';
 import { UsersListActiveResponseDto } from '../dto/users-list-active-response.dto.js';
 import { UserBalanceTransferResponseDto } from '../dto/user-balance-transfer-response.dto.js';
+import { UserBalanceTransferHistoryListResponseDto } from '../dto/user-balance-transfer-history-list-response.dto copy.js';
 
 export const ApiMe = () => {
   return applyDecorators(
@@ -184,7 +185,23 @@ export const ApiBalanceTransfer = () => {
     ApiOkResponse({
       type: UserBalanceTransferResponseDto,
     }),
-    Post('balance-transfer'),
+    Post('balance/transfer'),
+    HttpCode(HttpStatus.OK),
+  );
+};
+
+export const ApiBalanceTransferHistory = () => {
+  return applyDecorators(
+    AccessTokenAuthorization(),
+    ApiOperation({
+      summary: 'User Transfer balance history',
+    }),
+    ApiUnauthorizedResponse({ description: 'Unauthorization' }),
+    ApiBearerAuth(),
+    ApiOkResponse({
+      type: UserBalanceTransferHistoryListResponseDto,
+    }),
+    Get('balance/history'),
     HttpCode(HttpStatus.OK),
   );
 };

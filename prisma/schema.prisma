@@ -14,18 +14,20 @@ datasource db {
 }
 
 model User {
-  id               String         @id @default(uuid())
-  login            String         @unique
-  email            String         @unique
-  password         String
-  age              Int
-  aboutDescription String?        @map("about_description")
-  balance          Decimal        @default(0) @db.Decimal(12, 2)
-  refreshTokens    RefreshToken[]
-  avatars          Avatar[]
-  createdAt        DateTime       @default(now()) @map("created_at")
-  updatedAt        DateTime       @updatedAt @map("updated_at")
-  deletedAt        DateTime?      @map("deleted_at")
+  id                    String               @id @default(uuid())
+  login                 String               @unique
+  email                 String               @unique
+  password              String
+  age                   Int
+  aboutDescription      String?              @map("about_description")
+  balance               Decimal              @default(0) @db.Decimal(12, 2)
+  refreshTokens         RefreshToken[]
+  avatars               Avatar[]
+  senderTransactions    BalanceTransaction[] @relation(name: "Sender")
+  recipientTransactions BalanceTransaction[] @relation(name: "Recipient")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  deletedAt             DateTime?            @map("deleted_at")
 
   @@map("users")
 }
@@ -52,4 +54,20 @@ model Avatar {
 
   @@index([userId])
   @@map("avatars")
+}
+
+model BalanceTransaction {
+  id             String   @id @default(uuid())
+  senderId       String   @map("sender_id")
+  senderLogin    String   @map("sender_login")
+  sender         User     @relation(name: "Sender", fields: [senderId], references: [id])
+  recipientId    String   @map("recipient_id")
+  recipientLogin String   @map("recipient_login")
+  recipient      User     @relation(name: "Recipient", fields: [recipientId], references: [id])
+  sendedBalance  Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@map("balance_transactions")
 }

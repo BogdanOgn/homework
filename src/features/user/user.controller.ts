@@ -24,6 +24,7 @@ import {
   ApiFindActiveUsers,
   ApiAvatarRestore,
   ApiBalanceTransfer,
+  ApiBalanceTransferHistory,
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import type {
@@ -37,6 +38,8 @@ import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
+import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
+import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
 
 @ApiTags('User')
 @Controller('user')
@@ -165,5 +168,13 @@ export class UserController {
     @AuthorizedUserData('id') userId: string,
   ) {
     return this.userService.balanceTransfer(dto, userId);
+  }
+
+  @ApiBalanceTransferHistory()
+  async balanceTransferHistory(
+    @Query() filters: UserBalanceTransferHistoryFiltersDto,
+    @AuthorizedUserData('id') userId: string,
+  ): Promise<UserBalanceTransferHistoryListResponseDto> {
+    return await this.userService.balanceTransferHistory(filters, userId);
   }
 }
