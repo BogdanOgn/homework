@@ -32,3 +32,5 @@ export type AuthorizedUser = UserResponse;
 export type RefreshAuthorizedUser = UserResponse & { refreshToken: string };
 
 export type RequestUser = AuthorizedUser & { refreshToken?: string };
+
+export type deletedAvatarPaths = { Key: string };

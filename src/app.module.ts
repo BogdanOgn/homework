@@ -2,6 +2,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './features/prisma/prisma.module.js';
 import { UserModule } from './features/user/user.module.js';
 import { TokenModule } from './features/token/token.module.js';
@@ -35,6 +36,7 @@ import { Keyv } from 'keyv';
         limit: 10,
       },
     ]),
+    ScheduleModule.forRoot(),
     PrismaModule,
     UserModule,
     AuthModule,

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
+  deletedAvatarPaths,
   IBalanceTransferResponse,
   ICreateUserData,
   UpdateUserData,
@@ -16,6 +17,7 @@ import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { Prisma } from '@generated/prisma/client.js';
+import { AVATARS_TTL } from './constants/avatars-ttl.constants.js';
 
 @Injectable()
 export class UserRepository {
@@ -230,6 +232,27 @@ export class UserRepository {
       data: {
         deletedAt: null,
       },
+    });
+  }
+
+  async findAllDeletedAvatar(): Promise<deletedAvatarPaths[]> {
+    const ttlCondition = new Date(Date.now() - AVATARS_TTL);
+    const deletedAvatars = await this.prismaService.avatar.findMany({
+      where: { deletedAt: { not: null, lte: ttlCondition } },
+    });
+
+    const removeAvatarsArray = deletedAvatars.map((avatar) => {
+      return {
+        Key: avatar.path,
+      };
+    });
+
+    return removeAvatarsArray;
+  }
+
+  async clearAllDeletedAvatar() {
+    await this.prismaService.avatar.deleteMany({
+      where: { deletedAt: { not: null } },
     });
   }
 

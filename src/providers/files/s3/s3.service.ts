@@ -9,13 +9,13 @@ import { UploadFilePayloadDto } from './dto/upload-file-payload.dto.js';
 import { UploadFileResultDto } from './dto/upload-file-result.dto.js';
 import { RemoveFilePayloadDto } from './dto/remove-file-payload.dto.js';
 import { ConfigService } from '@nestjs/config';
+import { RemoveManyFilesPayloadDto } from './dto/remove-many-files-payload.dto.js';
 
 @Injectable()
 export class S3Service extends IFileService {
   private readonly logger = new Logger(S3Service.name);
 
   private readonly bucketName: string;
-  private readonly s3Endpoint: string;
 
   constructor(
     @Inject(S3Lib) private readonly S3: AWS.S3,
@@ -23,7 +23,6 @@ export class S3Service extends IFileService {
   ) {
     super();
     this.bucketName = configService.getOrThrow<string>('S3_BUCKET_NAME');
-    this.s3Endpoint = configService.getOrThrow<string>('S3_ENDPOINT');
   }
 
   async uploadFile(dto: UploadFilePayloadDto): Promise<UploadFileResultDto> {
@@ -78,6 +77,36 @@ export class S3Service extends IFileService {
             resolve();
           } else {
             this.logger.error(`❌ File remove error with path: ${path}`);
+            reject(
+              new RemoveException(
+                error instanceof Error ? error.message : undefined,
+              ),
+            );
+          }
+        },
+      );
+    });
+  }
+
+  async removeManyFiles(dto: RemoveManyFilesPayloadDto): Promise<void> {
+    const { paths } = dto;
+
+    this.logger.log('🗑️ Beginning of removing file from bucket');
+
+    return new Promise((resolve, reject) => {
+      this.S3.deleteObjects(
+        {
+          Bucket: this.bucketName,
+          Delete: {
+            Objects: paths,
+          },
+        },
+        (error: unknown) => {
+          if (!error) {
+            this.logger.log('✅ Removing was successful');
+            resolve();
+          } else {
+            // this.logger.error(`❌ File remove error with path: ${path}`);
             reject(
               new RemoveException(
                 error instanceof Error ? error.message : undefined,

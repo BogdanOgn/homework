@@ -28,6 +28,7 @@ import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class UserService {
@@ -205,5 +206,14 @@ export class UserService {
       recipientId,
       balance,
     );
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async clearDeletedAvatars(): Promise<void> {
+    const avatars = await this.userRepository.findAllDeletedAvatar();
+    if (avatars.length) {
+      await this.userRepository.clearAllDeletedAvatar();
+      await this.imagesService.removeManyImage({ paths: avatars });
+    }
   }
 }
