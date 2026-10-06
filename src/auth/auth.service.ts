@@ -113,7 +113,7 @@ export class AuthService {
     const cached = await this.cache.get<UserResponse>(cacheKey);
 
     if (cached) {
-      this.logger.log(`[Cache Return]: ${cacheKey}`);
+      this.logger.log(`[Cache Hit]: ${cacheKey}`);
       return cached;
     }
 
@@ -128,7 +128,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    this.logger.log(`[CaCachehce Miss]: ${cacheKey}`);
+    this.logger.log(`[Cache Miss]: ${cacheKey}`);
     return user;
   }
 }

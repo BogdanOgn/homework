@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { UserRepository } from './user.repository.js';
 import type {
+  IBalanceTransferResponse,
   ICreateUserData,
   UpdateUserData,
   UserResponse,
@@ -53,7 +54,7 @@ export class UserService {
     const cached = await this.cache.get<UsersListResponseDto>(cacheKey);
 
     if (cached) {
-      this.logger.log(`[Cache Return]: ${cacheKey}`);
+      this.logger.log(`[Cache Hit]: ${cacheKey}`);
 
       return cached;
     }
@@ -166,7 +167,7 @@ export class UserService {
     const cached = await this.cache.get<UsersListActiveResponseDto>(cacheKey);
 
     if (cached) {
-      this.logger.log(`[Cache Return]: ${cacheKey}`);
+      this.logger.log(`[Cache Hit]: ${cacheKey}`);
 
       return cached;
     }
@@ -181,7 +182,10 @@ export class UserService {
     return users;
   }
 
-  async balanceTransfer(transferDto: UserBalanceTransferDto, userId: string) {
+  async balanceTransfer(
+    transferDto: UserBalanceTransferDto,
+    userId: string,
+  ): Promise<IBalanceTransferResponse> {
     const { recipientId, balance } = transferDto;
 
     if (userId === recipientId) {

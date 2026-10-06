@@ -28,6 +28,7 @@ import {
 } from './decorators/api-user.decorator.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
 import type {
+  IBalanceTransferResponse,
   UserResponse,
   UserUploadAvatarResponse,
 } from './types/user.types.js';
@@ -153,7 +154,7 @@ export class UserController {
   async balanceTransfer(
     @Body() dto: UserBalanceTransferDto,
     @AuthorizedUserData('id') userId: string,
-  ) {
+  ): Promise<IBalanceTransferResponse> {
     return this.userService.balanceTransfer(dto, userId);
   }
 
