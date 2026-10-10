@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { UserRepository } from './user.repository.js';
 import type {
+  deletedAvatarPaths,
   IBalanceTransferResponse,
   ICreateUserData,
   UpdateUserData,
@@ -29,7 +30,6 @@ import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
 
@@ -221,12 +221,11 @@ export class UserService {
     return await this.userRepository.getBalanceTransferHistory(filters, userId);
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_1AM)
-  async clearDeletedAvatars(): Promise<void> {
-    const avatars = await this.userRepository.findAllDeletedAvatar();
-    if (avatars.length) {
-      await this.userRepository.clearAllDeletedAvatar();
-      await this.imagesService.removeManyImage({ paths: avatars });
-    }
+  async findAllPathsDeletedAvatar(take: number): Promise<deletedAvatarPaths[]> {
+    return await this.userRepository.findAllPathsDeletedAvatar(take);
+  }
+
+  async clearAllDeletedAvatar(ids: string[]): Promise<void> {
+    await this.userRepository.clearAllDeletedAvatar(ids);
   }
 }

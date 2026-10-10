@@ -20,13 +20,21 @@ import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { Prisma } from '@generated/prisma/client.js';
-import { AVATARS_TTL } from './constants/avatars-ttl.constants.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserRepository {
-  constructor(private readonly prismaService: PrismaService) {}
+  private readonly AVATARS_DELETED_TTL: string;
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prismaService: PrismaService,
+  ) {
+    this.AVATARS_DELETED_TTL = this.configService.getOrThrow<string>(
+      'AVATARS_DELETED_TTL',
+    );
+  }
 
   async create(dto: ICreateUserData): Promise<UserResponse> {
     const user = await this.prismaService.user.create({
@@ -241,24 +249,32 @@ export class UserRepository {
     });
   }
 
-  async findAllDeletedAvatar(): Promise<deletedAvatarPaths[]> {
-    const ttlCondition = new Date(Date.now() - AVATARS_TTL);
+  async findAllPathsDeletedAvatar(take: number): Promise<deletedAvatarPaths[]> {
+    const ttlCondition = new Date(
+      Date.now() - Number(this.AVATARS_DELETED_TTL),
+    );
+
     const deletedAvatars = await this.prismaService.avatar.findMany({
       where: { deletedAt: { not: null, lte: ttlCondition } },
+      take,
+      orderBy: {
+        id: SORT_ORDER.ASC,
+      },
     });
 
-    const removeAvatarsArray = deletedAvatars.map((avatar) => {
+    const deletedAvatarsArray = deletedAvatars.map((avatar) => {
       return {
         Key: avatar.path,
+        id: avatar.id,
       };
     });
 
-    return removeAvatarsArray;
+    return deletedAvatarsArray;
   }
 
-  async clearAllDeletedAvatar() {
+  async clearAllDeletedAvatar(ids: string[]): Promise<void> {
     await this.prismaService.avatar.deleteMany({
-      where: { deletedAt: { not: null } },
+      where: { id: { in: ids } },
     });
   }
 
@@ -304,7 +320,7 @@ export class UserRepository {
               deletedAt: null,
             },
             orderBy: {
-              createdAt: 'asc',
+              createdAt: SORT_ORDER.ASC,
             },
             take: -1,
           },
