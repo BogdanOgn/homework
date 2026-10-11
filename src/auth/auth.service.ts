@@ -69,7 +69,7 @@ export class AuthService {
     const verifyPassword = await bcrypt.compare(password, user.password);
 
     if (!verifyPassword) {
-      this.logger.log(`[Login]: Failed user login - ${user.id}`);
+      this.logger.warn(`[Login]: Failed user login - ${user.id}`);
       throw new UnauthorizedException('Incorrect credentials');
     }
 

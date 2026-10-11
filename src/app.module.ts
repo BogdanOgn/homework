@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bullmq';
+import { LoggerModule } from 'nestjs-pino';
 import { PrismaModule } from './features/prisma/prisma.module.js';
 import { UserModule } from './features/user/user.module.js';
 import { TokenModule } from './features/token/token.module.js';
@@ -49,6 +50,7 @@ import { AvatarCleanupModule } from './features/avatar-cleanup/avatar-cleanup.mo
         },
       }),
     }),
+    LoggerModule.forRoot(),
     PrismaModule,
     UserModule,
     AuthModule,
