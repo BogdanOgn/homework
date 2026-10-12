@@ -12,6 +12,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiHeader,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
@@ -179,6 +180,11 @@ export const ApiBalanceTransfer = () => {
     AccessTokenAuthorization(),
     ApiOperation({
       summary: 'Transfer user balance',
+    }),
+    ApiHeader({
+      name: 'idempotency-key',
+      description: 'Custom header',
+      example: '4f154fc0-3194-4793-a411-1fa3111b8e81',
     }),
     ApiUnauthorizedResponse({ description: 'Unauthorization' }),
     ApiBearerAuth(),

@@ -1,6 +1,7 @@
 import {
   BadGatewayException,
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   Logger,
@@ -186,8 +187,13 @@ export class UserService {
   async balanceTransfer(
     transferDto: UserBalanceTransferDto,
     userId: string,
+    idempotencyKey: string,
   ): Promise<IBalanceTransferResponse> {
     const { recipientId, balance } = transferDto;
+
+    if (!idempotencyKey) {
+      throw new BadRequestException('Indempotency key is required');
+    }
 
     if (userId === recipientId) {
       throw new BadRequestException('Unable to transfer funds to yourself');
@@ -212,7 +218,13 @@ export class UserService {
       userId,
       recipientId,
       balance,
+      idempotencyKey,
     );
+
+    if (!transfer) {
+      throw new ConflictException('The transaction is currently not possible');
+    }
+
     this.logger.log(
       { userId, recipient: recipientId },
       '[Balance Transfer]: Transfer balanсe',

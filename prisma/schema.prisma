@@ -65,6 +65,7 @@ model BalanceTransaction {
   recipientLogin String   @map("recipient_login")
   recipient      User     @relation(name: "Recipient", fields: [recipientId], references: [id])
   sendedBalance  Decimal  @default(0) @db.Decimal(12, 2)
+  idempotencyKey String   @unique @map("idempotency_key") @db.Uuid
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@index([senderId])

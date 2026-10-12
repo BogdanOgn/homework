@@ -344,9 +344,19 @@ export class UserRepository {
     senderId: string,
     recipientId: string,
     sendedBalance: number,
-  ): Promise<IBalanceTransferResponse> {
+    idempotencyKey: string,
+  ): Promise<IBalanceTransferResponse | undefined> {
     const txData = await this.prismaService.$transaction(
       async (tx) => {
+        const existingTransaction = await tx.balanceTransaction.findFirst({
+          where: {
+            senderId,
+            idempotencyKey,
+          },
+        });
+
+        if (existingTransaction) return;
+
         const sender = await tx.user.update({
           data: {
             balance: { decrement: sendedBalance },
@@ -373,6 +383,7 @@ export class UserRepository {
           recipientId: recipient.id,
           recipientLogin: recipient.login,
           sendedBalance,
+          idempotencyKey,
         };
 
         await tx.balanceTransaction.create({
@@ -387,6 +398,8 @@ export class UserRepository {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       },
     );
+
+    if (!txData) return;
 
     return {
       oldBalance: +txData.sender.balance.plus(sendedBalance),

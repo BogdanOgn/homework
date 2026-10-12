@@ -40,6 +40,7 @@ import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
+import { IdempotencyKey } from '@common/decorators/idempotency-key.decorator.js';
 
 @ApiTags('User')
 @Controller('user')
@@ -135,8 +136,9 @@ export class UserController {
   async balanceTransfer(
     @Body() dto: UserBalanceTransferDto,
     @AuthorizedUserData('id') userId: string,
+    @IdempotencyKey() idempotencyKey: string,
   ): Promise<IBalanceTransferResponse> {
-    return this.userService.balanceTransfer(dto, userId);
+    return this.userService.balanceTransfer(dto, userId, idempotencyKey);
   }
 
   @ApiBalanceTransferHistory()
