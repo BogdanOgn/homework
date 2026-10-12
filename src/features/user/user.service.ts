@@ -122,6 +122,7 @@ export class UserService {
 
       const avatar = await this.userRepository.avatarUpload(userId, path);
 
+      this.logger.log({ userId, path }, '[Avatar Upload]: Upload avatar');
       return { ...avatar };
     } catch {
       throw new BadGatewayException('The file could not be uploaded');
@@ -207,11 +208,17 @@ export class UserService {
       throw new BadRequestException('Not enough balance');
     }
 
-    return await this.userRepository.balanceTransfer(
+    const transfer = await this.userRepository.balanceTransfer(
       userId,
       recipientId,
       balance,
     );
+    this.logger.log(
+      { userId, recipient: recipientId },
+      '[Balance Transfer]: Transfer balanсe',
+    );
+
+    return transfer;
   }
 
   async balanceTransferHistory(

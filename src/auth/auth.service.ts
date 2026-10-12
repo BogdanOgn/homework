@@ -53,6 +53,8 @@ export class AuthService {
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(user);
 
+    this.logger.log({ email }, '[Register]: Register user');
+
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
@@ -77,6 +79,8 @@ export class AuthService {
 
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(user);
+
+    this.logger.log({ login }, '[Login]: Login user');
 
     return { accessToken: accessToken, refreshToken: refreshToken };
   }

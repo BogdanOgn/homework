@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bullmq';
 import { LoggerModule } from 'nestjs-pino';
+import { ClsModule, ClsService } from 'nestjs-cls';
 import { PrismaModule } from './features/prisma/prisma.module.js';
 import { UserModule } from './features/user/user.module.js';
 import { TokenModule } from './features/token/token.module.js';
@@ -15,6 +16,9 @@ import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
 import { Keyv } from 'keyv';
 import { AvatarCleanupModule } from './features/avatar-cleanup/avatar-cleanup.module.js';
+import { randomUUID } from 'crypto';
+import type { Request, Response } from 'express';
+import { SerializedRequest, SerializedResponse } from 'pino-std-serializers';
 
 @Module({
   imports: [
@@ -50,7 +54,51 @@ import { AvatarCleanupModule } from './features/avatar-cleanup/avatar-cleanup.mo
         },
       }),
     }),
-    LoggerModule.forRoot(),
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator: (req: Request): string =>
+          (req.headers['x-request-id'] ?? randomUUID()) as string,
+        setup: (cls, req: Request, res: Response): void => {
+          res.set('x-request-id', cls.getId());
+        },
+      },
+    }),
+    LoggerModule.forRootAsync({
+      inject: [ClsService],
+      useFactory: (clsService: ClsService) => ({
+        pinoHttp: {
+          genReqId: () => clsService.getId(),
+          quietReqLogger: true,
+          transport: {
+            target: 'pino-pretty',
+          },
+          serializers: {
+            req: (req: SerializedRequest) => {
+              const { cookie: _c, authorization: _a, ...headers } = req.headers;
+
+              return {
+                id: req.id,
+                method: req.method,
+                url: req.url,
+                query: req.query,
+                headers,
+              };
+            },
+            res: (res: SerializedResponse) => {
+              const { 'set-cookie': _, ...headers } = res.headers;
+
+              return {
+                statusCode: res.statusCode,
+                headers,
+              };
+            },
+          },
+        },
+      }),
+    }),
     PrismaModule,
     UserModule,
     AuthModule,

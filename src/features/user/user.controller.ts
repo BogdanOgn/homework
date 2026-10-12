@@ -3,7 +3,6 @@ import {
   Controller,
   FileTypeValidator,
   ForbiddenException,
-  Logger,
   Param,
   ParseFilePipe,
   Query,
@@ -45,13 +44,12 @@ import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-tr
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  private readonly logger = new Logger('UserController');
   constructor(private readonly userService: UserService) {}
 
   @ApiFindAll()
   findAll(@Query() filters: UsersFiltersDto): Promise<UsersListResponseDto> {
     const users = this.userService.findMany(filters);
-    this.logger.log('[FindAll]: Get users list');
+
     return users;
   }
 
@@ -59,8 +57,6 @@ export class UserController {
   async findActiveUsers(
     @Query() filters: UserActiveFiltersDto,
   ): Promise<UsersListActiveResponseDto> {
-    this.logger.log('[FindActiveUsers]: Get active users');
-
     return this.userService.findActiveUsers(filters);
   }
 
@@ -73,7 +69,7 @@ export class UserController {
       throw new ForbiddenException('Forbidden access');
     }
     await this.userService.softDelete(id);
-    this.logger.log(`[SoftDelete]: Soft delete user - ${user.id}`);
+
     return 'OK';
   }
 
@@ -86,14 +82,11 @@ export class UserController {
     if (user.id !== id) {
       throw new ForbiddenException('Forbidden access');
     }
-    this.logger.log(`[Update]: Update user data - ${user.id}`);
     return await this.userService.update(id, dto);
   }
 
   @ApiMe()
   me(@AuthorizedUserData() user: User): UserResponse {
-    this.logger.log(`[Me]: Get current user accout - ${user.id}`);
-
     return user;
   }
 
@@ -109,9 +102,6 @@ export class UserController {
     file: IUploadedMulterFile,
     @AuthorizedUserData() user: User,
   ): Promise<UserUploadAvatarResponse> {
-    this.logger.log(
-      `[Avatar Upload]: Upload avatar for user with id - ${user.id}`,
-    );
     return this.userService.avatarUpload(file, user.id);
   }
 
@@ -122,9 +112,6 @@ export class UserController {
   ): Promise<string> {
     await this.userService.avatarSoftDelete(avatarId, user.id);
 
-    this.logger.log(
-      `[Avatar Delete]: Soft delete avatar for user with id - ${user.id}`,
-    );
     return 'OK';
   }
 
@@ -133,9 +120,6 @@ export class UserController {
     @Param('avatarId') avatarId: string,
     @AuthorizedUserData() user: User,
   ): Promise<UserUploadAvatarResponse> {
-    this.logger.log(
-      `[AvatarRestore]: Restore avatar with id - ${avatarId} for user with id - ${user.id}`,
-    );
     return await this.userService.avatarRestore(avatarId, user.id);
   }
 
@@ -144,9 +128,6 @@ export class UserController {
     @Query() filters: UserAvatarFilters,
     @Param('userId') userId: string,
   ): Promise<UserUploadAvatarResponse[]> {
-    this.logger.log(
-      `[Avatar Find All]: Find all avatars for user with id - ${userId}`,
-    );
     return await this.userService.avatarFindAll(userId, filters);
   }
 
