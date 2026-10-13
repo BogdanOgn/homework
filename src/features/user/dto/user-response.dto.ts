@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsNumber, IsPositive, IsString } from 'class-validator';
+import { UserUploadAvatarResponseDto } from './user-upload-avatar-response.dto.js';
+import { UserUploadAvatarResponse } from '../types/user.types.js';
 
 export class UserResponseDto {
   @ApiProperty({
@@ -65,4 +67,10 @@ export class UserResponseDto {
   })
   @IsString()
   deletedAt!: Date | null;
+
+  @ApiPropertyOptional({
+    description: 'Users avatars',
+    type: [UserUploadAvatarResponseDto],
+  })
+  avatars?: UserUploadAvatarResponse[];
 }

@@ -39,8 +39,8 @@ import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
-import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
 import { IdempotencyKey } from '@common/decorators/idempotency-key.decorator.js';
+import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto.js';
 
 @ApiTags('User')
 @Controller('user')

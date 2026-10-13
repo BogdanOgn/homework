@@ -32,7 +32,7 @@ import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
-import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto copy.js';
+import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto.js';
 
 @Injectable()
 export class UserService {
@@ -192,7 +192,7 @@ export class UserService {
     const { recipientId, balance } = transferDto;
 
     if (!idempotencyKey) {
-      throw new BadRequestException('Indempotency key is required');
+      throw new BadRequestException('Idempotency key is required');
     }
 
     if (userId === recipientId) {
