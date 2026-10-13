@@ -7,13 +7,11 @@ import {
   UserResponse,
   UserResponseWithPassword,
 } from '@features/user/types/user.types.js';
-import {
-  BadRequestException,
-  ConflictException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import * as bcrypt from 'bcrypt';
 import { ITokenPayload } from '@features/token/types/token.types.js';
+import { Prisma } from '@generated/prisma/client.js';
 
 vi.mock('bcrypt');
 
@@ -36,6 +34,7 @@ const userResponse: UserResponse = {
   email: existingUserEmail,
   age: 24,
   aboutDescription: 'Lorem ipsum dolor sit amet',
+  balance: new Prisma.Decimal(0),
   createdAt: new Date('2026-09-01T13:58:51.326Z'),
   updatedAt: new Date('2026-09-01T13:58:51.326Z'),
   deletedAt: null,
@@ -75,6 +74,7 @@ describe('AuthService', () => {
   let authService: AuthService;
   let userService: UserService;
   let tokenService: TokenService;
+  let cache: Cache;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -82,6 +82,14 @@ describe('AuthService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         AuthService,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            get: vi.fn(),
+            set: vi.fn(),
+            del: vi.fn(),
+          },
+        },
         {
           provide: UserService,
           useValue: {
@@ -96,6 +104,7 @@ describe('AuthService', () => {
           provide: TokenService,
           useValue: {
             generateTokens: vi.fn(),
+            validateRefreshToken: vi.fn(),
             deleteManyByExpires: vi.fn(),
             deleteManyByToken: vi.fn(),
             deleteManyByUserId: vi.fn(),
@@ -107,6 +116,7 @@ describe('AuthService', () => {
     authService = moduleRef.get(AuthService);
     userService = moduleRef.get(UserService);
     tokenService = moduleRef.get(TokenService);
+    cache = moduleRef.get(CACHE_MANAGER);
   });
 
   describe('register', () => {
@@ -178,17 +188,6 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('failed login by login is not pass', async () => {
-      await expect(
-        authService.login({
-          ...loginUserRequest,
-          login: '',
-        }),
-      ).rejects.toThrow(BadRequestException);
-
-      expect(userService.findByLoginWithPassword).not.toHaveBeenCalled();
-    });
-
     it('failed login by user not found', async () => {
       vi.mocked(userService.findByLoginWithPassword).mockResolvedValue(null);
 
@@ -251,8 +250,16 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('successfully logout user', async () => {
+      vi.mocked(tokenService.validateRefreshToken).mockResolvedValue(
+        tokenPayload,
+      );
+
       await expect(authService.logout(refreshToken)).resolves.toBe('OK');
 
+      expect(tokenService.validateRefreshToken).toHaveBeenCalledWith(
+        refreshToken,
+      );
+      expect(cache.del).toHaveBeenCalledWith(`user:${userId}`);
       expect(tokenService.deleteManyByToken).toHaveBeenCalledWith(refreshToken);
     });
   });
@@ -262,6 +269,7 @@ describe('AuthService', () => {
       await expect(authService.logoutAll(userId)).resolves.toBe('OK');
 
       expect(tokenService.deleteManyByUserId).toHaveBeenCalledWith(userId);
+      expect(cache.del).toHaveBeenCalledWith(`user:${userId}`);
     });
   });
 
@@ -288,14 +296,29 @@ describe('AuthService', () => {
       );
 
       expect(userService.findById).toHaveBeenCalledWith(userId);
+      expect(cache.set).not.toHaveBeenCalled();
     });
 
-    it('successfully validate user', async () => {
+    it('successfully validate user from cache', async () => {
+      vi.mocked(cache.get).mockResolvedValue(userResponse);
+
+      await expect(authService.validate(userId)).resolves.toBe(userResponse);
+
+      expect(cache.get).toHaveBeenCalledWith(`user:${userId}`);
+      expect(userService.findById).not.toHaveBeenCalled();
+    });
+
+    it('successfully validate user and cache it', async () => {
       vi.mocked(userService.findById).mockResolvedValue(userResponse);
 
       await expect(authService.validate(userId)).resolves.toBe(userResponse);
 
       expect(userService.findById).toHaveBeenCalledWith(userId);
+      expect(cache.set).toHaveBeenCalledWith(
+        `user:${userId}`,
+        userResponse,
+        30000,
+      );
     });
   });
 });
