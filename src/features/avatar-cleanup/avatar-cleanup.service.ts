@@ -50,12 +50,15 @@ export class AvatarCleanupService {
       if (!avatars.length) break;
 
       const avatarPaths = avatars.map(({ Key }) => ({ Key }));
-      await this.imagesService.removeManyImage({ paths: avatarPaths });
+      const deletedAvatars = await this.imagesService.removeManyImage({
+        paths: avatarPaths,
+      });
 
-      const avatarIds = avatars.map(({ id }) => id);
-      await this.userService.clearAllDeletedAvatar(avatarIds);
+      if (!deletedAvatars.deleted.length) break;
 
-      removedAvatars += avatars.length;
+      await this.userService.clearAllDeletedAvatar(deletedAvatars.deleted);
+
+      removedAvatars += deletedAvatars.deleted.length;
     }
 
     return { deletedLength: removedAvatars };

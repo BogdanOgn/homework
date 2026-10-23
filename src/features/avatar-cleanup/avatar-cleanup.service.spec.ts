@@ -112,6 +112,15 @@ describe('AvatarCleanupService', () => {
         .mockResolvedValueOnce(firstBatch)
         .mockResolvedValueOnce(secondBatch)
         .mockResolvedValueOnce([]);
+      vi.mocked(imagesService.removeManyImage)
+        .mockResolvedValueOnce({
+          deleted: ['avatars/avatar-1.png', 'avatars/avatar-2.png'],
+          failed: [],
+        })
+        .mockResolvedValueOnce({
+          deleted: ['avatars/avatar-3.png'],
+          failed: [],
+        });
 
       await expect(avatarCleanupService.clearDeletedAvatars()).resolves.toEqual(
         { deletedLength: 3 },
@@ -131,12 +140,48 @@ describe('AvatarCleanupService', () => {
       });
 
       expect(userService.clearAllDeletedAvatar).toHaveBeenNthCalledWith(1, [
-        'avatar-1',
-        'avatar-2',
+        'avatars/avatar-1.png',
+        'avatars/avatar-2.png',
       ]);
       expect(userService.clearAllDeletedAvatar).toHaveBeenNthCalledWith(2, [
-        'avatar-3',
+        'avatars/avatar-3.png',
       ]);
+    });
+
+    it('clear only avatars whose files were removed from s3', async () => {
+      vi.mocked(userService.findAllPathsDeletedAvatar)
+        .mockResolvedValueOnce(firstBatch)
+        .mockResolvedValueOnce([]);
+      vi.mocked(imagesService.removeManyImage).mockResolvedValueOnce({
+        deleted: ['avatars/avatar-1.png'],
+        failed: ['avatars/avatar-2.png'],
+      });
+
+      await expect(avatarCleanupService.clearDeletedAvatars()).resolves.toEqual(
+        { deletedLength: 1 },
+      );
+
+      expect(userService.clearAllDeletedAvatar).toHaveBeenCalledTimes(1);
+      expect(userService.clearAllDeletedAvatar).toHaveBeenCalledWith([
+        'avatars/avatar-1.png',
+      ]);
+    });
+
+    it('stop when no files in batch were removed from s3', async () => {
+      vi.mocked(userService.findAllPathsDeletedAvatar).mockResolvedValue(
+        firstBatch,
+      );
+      vi.mocked(imagesService.removeManyImage).mockResolvedValue({
+        deleted: [],
+        failed: ['avatars/avatar-1.png', 'avatars/avatar-2.png'],
+      });
+
+      await expect(avatarCleanupService.clearDeletedAvatars()).resolves.toEqual(
+        { deletedLength: 0 },
+      );
+
+      expect(imagesService.removeManyImage).toHaveBeenCalledTimes(1);
+      expect(userService.clearAllDeletedAvatar).not.toHaveBeenCalled();
     });
 
     it('not clear avatars in db when files removal failed', async () => {

@@ -272,9 +272,9 @@ export class UserRepository {
     return deletedAvatarsArray;
   }
 
-  async clearAllDeletedAvatar(ids: string[]): Promise<void> {
+  async clearAllDeletedAvatar(paths: string[]): Promise<void> {
     await this.prismaService.avatar.deleteMany({
-      where: { id: { in: ids } },
+      where: { path: { in: paths } },
     });
   }
 

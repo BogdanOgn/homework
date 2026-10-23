@@ -10,6 +10,7 @@ import { UploadFileResultDto } from './dto/upload-file-result.dto.js';
 import { RemoveFilePayloadDto } from './dto/remove-file-payload.dto.js';
 import { ConfigService } from '@nestjs/config';
 import { RemoveManyFilesPayloadDto } from './dto/remove-many-files-payload.dto.js';
+import type { IRemoveManyFilesResult } from './interfaces/remove-many-files-result.interface.js';
 
 @Injectable()
 export class S3Service extends IFileService {
@@ -88,12 +89,14 @@ export class S3Service extends IFileService {
     });
   }
 
-  async removeManyFiles(dto: RemoveManyFilesPayloadDto): Promise<void> {
+  async removeManyFiles(
+    dto: RemoveManyFilesPayloadDto,
+  ): Promise<IRemoveManyFilesResult> {
     const { paths } = dto;
 
     this.logger.log('🗑️ Beginning of removing file from bucket');
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.S3.deleteObjects(
         {
           Bucket: this.bucketName,
@@ -101,10 +104,28 @@ export class S3Service extends IFileService {
             Objects: paths,
           },
         },
-        (error: unknown) => {
+        (error: unknown, data) => {
           if (!error) {
-            this.logger.log('✅ Removing was successful');
-            resolve();
+            const deleted = (data?.Deleted ?? [])
+              .map(({ Key }) => Key)
+              .filter((key): key is string => key !== undefined);
+
+            const failed = (data?.Errors ?? [])
+              .map(({ Key }) => Key)
+              .filter((key): key is string => key !== undefined);
+
+            data?.Errors?.forEach(({ Key, Code, Message }) => {
+              this.logger.error(
+                { path: Key, code: Code, message: Message },
+                '❌ File remove error',
+              );
+            });
+
+            this.logger.log(
+              `✅ Removed ${deleted.length} of ${paths.length} files`,
+            );
+
+            resolve({ deleted, failed });
           } else {
             // this.logger.error(`❌ File remove error with path: ${path}`);
             reject(

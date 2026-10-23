@@ -247,7 +247,7 @@ export class UserService {
     return await this.userRepository.findAllPathsDeletedAvatar(take);
   }
 
-  async clearAllDeletedAvatar(ids: string[]): Promise<void> {
-    await this.userRepository.clearAllDeletedAvatar(ids);
+  async clearAllDeletedAvatar(paths: string[]): Promise<void> {
+    await this.userRepository.clearAllDeletedAvatar(paths);
   }
 }
