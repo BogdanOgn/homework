@@ -19,7 +19,7 @@ import { SORT_ORDER } from './enums/sort-order.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
 import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
-import { Prisma } from '@generated/prisma/client.js';
+import { BalanceTransaction, Prisma } from '@generated/prisma/client.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto.js';
 import { ConfigService } from '@nestjs/config';
@@ -345,68 +345,90 @@ export class UserRepository {
     recipientId: string,
     sendedBalance: number,
     idempotencyKey: string,
-  ): Promise<IBalanceTransferResponse | undefined> {
-    const txData = await this.prismaService.$transaction(
-      async (tx) => {
-        const existingTransaction = await tx.balanceTransaction.findFirst({
-          where: {
+  ): Promise<
+    | IBalanceTransferResponse
+    | { idempotencyKeyException: boolean }
+    | { balanceException: true }
+  > {
+    try {
+      return await this.prismaService.$transaction(
+        async (tx) => {
+          const existingTransfer = await this.getExistingTransfer(
+            tx,
             senderId,
+            recipientId,
+            sendedBalance,
             idempotencyKey,
-          },
-        });
+          );
 
-        if (existingTransaction) return;
+          if (existingTransfer) {
+            return existingTransfer;
+          }
 
-        const sender = await tx.user.update({
-          data: {
-            balance: { decrement: sendedBalance },
-          },
-          where: {
-            id: senderId,
-            deletedAt: null,
-            balance: { gte: sendedBalance },
-          },
-        });
-
-        const recipient = await tx.user.update({
-          data: {
-            balance: {
-              increment: sendedBalance,
+          const senderUpdated = await tx.user.update({
+            data: {
+              balance: { decrement: sendedBalance },
             },
-          },
-          where: { id: recipientId, deletedAt: null },
-        });
+            where: {
+              id: senderId,
+              deletedAt: null,
+              balance: { gte: sendedBalance },
+            },
+          });
 
-        const historyTransferData = {
-          senderId: sender.id,
-          senderLogin: sender.login,
-          recipientId: recipient.id,
-          recipientLogin: recipient.login,
-          sendedBalance,
-          idempotencyKey,
-        };
+          const recipientUpdated = await tx.user.update({
+            data: {
+              balance: {
+                increment: sendedBalance,
+              },
+            },
+            where: { id: recipientId, deletedAt: null },
+          });
 
-        await tx.balanceTransaction.create({
-          data: historyTransferData,
-        });
+          const balanceHistory = await tx.balanceTransaction.create({
+            data: {
+              senderId: senderUpdated.id,
+              senderLogin: senderUpdated.login,
+              senderOldBalance: +senderUpdated.balance.plus(sendedBalance),
+              senderNewBalance: senderUpdated.balance,
+              recipientId: recipientUpdated.id,
+              recipientLogin: recipientUpdated.login,
+              sendedBalance,
+              idempotencyKey,
+            },
+          });
 
-        return { sender, recipient };
-      },
-      {
-        maxWait: 5000,
-        timeout: 10000,
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      },
-    );
+          return this.transferResponse(balanceHistory);
+        },
+        {
+          maxWait: 5000,
+          timeout: 10000,
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          return { balanceException: true };
+        }
 
-    if (!txData) return;
+        if (error.code === 'P2002' || error.code === 'P2034') {
+          const existingTransfer = await this.getExistingTransfer(
+            this.prismaService,
+            senderId,
+            recipientId,
+            sendedBalance,
+            idempotencyKey,
+          );
 
-    return {
-      oldBalance: +txData.sender.balance.plus(sendedBalance),
-      newBalance: +txData.sender.balance,
-      senderLogin: txData.sender.login,
-      recipientLogin: txData.recipient.login,
-    };
+          if (existingTransfer) {
+            return existingTransfer;
+          }
+        }
+      }
+
+      throw error;
+    }
   }
 
   async getBalanceTransferHistory(
@@ -458,5 +480,44 @@ export class UserRepository {
       page,
       pages: total > 0 ? Math.ceil(total / pageSize) : 0,
     };
+  }
+
+  private transferResponse(data: BalanceTransaction): IBalanceTransferResponse {
+    return {
+      oldBalance: +data.senderOldBalance,
+      newBalance: +data.senderNewBalance,
+      senderLogin: data.senderLogin,
+      recipientLogin: data.recipientLogin,
+    };
+  }
+
+  private async getExistingTransfer(
+    client: Prisma.TransactionClient,
+    senderId: string,
+    recipientId: string,
+    sendedBalance: number,
+    idempotencyKey: string,
+  ): Promise<
+    IBalanceTransferResponse | { idempotencyKeyException: true } | null
+  > {
+    const existingTransaction = await client.balanceTransaction.findUnique({
+      where: {
+        senderId_idempotencyKey: {
+          senderId,
+          idempotencyKey,
+        },
+      },
+    });
+
+    if (!existingTransaction) return null;
+
+    if (
+      existingTransaction.recipientId !== recipientId ||
+      !existingTransaction.sendedBalance.equals(sendedBalance)
+    ) {
+      return { idempotencyKeyException: true };
+    }
+
+    return this.transferResponse(existingTransaction);
   }
 }

@@ -9,12 +9,6 @@ export interface ICreateUserData {
 }
 
 export interface IBalanceTransferResponse {
-  oldBalance?: number;
-  newBalance: number;
-  senderLogin: string;
-  recipientLogin: string;
-}
-export interface IUserBalanceTransferHistoryResponse {
   oldBalance: number;
   newBalance: number;
   senderLogin: string;

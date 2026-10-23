@@ -210,10 +210,6 @@ export class UserService {
       throw new NotFoundException('Recipient User not found');
     }
 
-    if (+senderUser.balance < balance) {
-      throw new BadRequestException('Not enough balance');
-    }
-
     const transfer = await this.userRepository.balanceTransfer(
       userId,
       recipientId,
@@ -223,6 +219,13 @@ export class UserService {
 
     if (!transfer) {
       throw new ConflictException('The transaction is currently not possible');
+    }
+
+    if ('idempotencyKeyException' in transfer) {
+      throw new ConflictException('Idempotency key already used');
+    }
+    if ('balanceException' in transfer) {
+      throw new BadRequestException('Not enough balance');
     }
 
     this.logger.log(
