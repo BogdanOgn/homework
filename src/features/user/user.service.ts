@@ -148,19 +148,34 @@ export class UserService {
     avatarId: string,
     userId: string,
   ): Promise<UserUploadAvatarResponse> {
-    const images = await this.userRepository.findAvatarsByUserId(userId);
-    if (images.length >= 5) {
-      throw new UnprocessableEntityException('Image upload limit exceeded');
+    try {
+      const images = await this.userRepository.findAvatarsByUserId(userId);
+      if (images.length >= 5) {
+        throw new UnprocessableEntityException('Image upload limit exceeded');
+      }
+
+      const deletedAvatar =
+        await this.userRepository.findDeletedAvatarById(avatarId);
+
+      if (!deletedAvatar) {
+        throw new NotFoundException('Deleted image not found');
+      }
+
+      const restoredAvatar = await this.userRepository.avatarRestore(
+        avatarId,
+        userId,
+      );
+
+      if ('hasLimit' in restoredAvatar) {
+        throw new UnprocessableEntityException('Image upload limit exceeded');
+      }
+
+      return restoredAvatar;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      throw new BadGatewayException('The file could not be restored');
     }
-
-    const deletedAvatar =
-      await this.userRepository.findDeletedAvatarById(avatarId);
-
-    if (!deletedAvatar) {
-      throw new NotFoundException('Deleted image not found');
-    }
-
-    return await this.userRepository.avatarRestore(avatarId, userId);
   }
 
   async avatarFindAll(

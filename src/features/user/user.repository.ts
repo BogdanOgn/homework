@@ -215,11 +215,11 @@ export class UserRepository {
     try {
       return await this.prismaService.$transaction(
         async (tx) => {
-          const totalImages = await tx.avatar.count({
+          const totalAvatars = await tx.avatar.count({
             where: { userId, deletedAt: null },
           });
 
-          if (totalImages >= 5) {
+          if (totalAvatars >= 5) {
             return { hasLimit: true };
           }
 
@@ -265,16 +265,47 @@ export class UserRepository {
   async avatarRestore(
     avatarId: string,
     userId: string,
-  ): Promise<UserUploadAvatarResponse> {
-    return await this.prismaService.avatar.update({
-      where: {
-        id: avatarId,
-        userId,
-      },
-      data: {
-        deletedAt: null,
-      },
-    });
+  ): Promise<UserUploadAvatarResponse | { hasLimit: true }> {
+    try {
+      return await this.prismaService.$transaction(
+        async (tx) => {
+          const totalAvatars = await tx.avatar.count({
+            where: {
+              userId,
+              deletedAt: null,
+            },
+          });
+
+          if (totalAvatars >= 5) {
+            return { hasLimit: true };
+          }
+
+          return await tx.avatar.update({
+            where: {
+              id: avatarId,
+              userId,
+            },
+            data: {
+              deletedAt: null,
+            },
+          });
+        },
+        {
+          maxWait: 5000,
+          timeout: 10000,
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2034'
+      ) {
+        return { hasLimit: true };
+      }
+
+      throw error;
+    }
   }
 
   async findAllPathsDeletedAvatar(take: number): Promise<deletedAvatarPaths[]> {
