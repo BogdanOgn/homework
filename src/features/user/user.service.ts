@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   BadRequestException,
   ConflictException,
+  HttpException,
   Inject,
   Injectable,
   Logger,
@@ -123,9 +124,17 @@ export class UserService {
 
       const avatar = await this.userRepository.avatarUpload(userId, path);
 
+      if ('hasLimit' in avatar) {
+        await this.imagesService.removeImage({ path });
+        throw new UnprocessableEntityException('Image upload limit exceeded');
+      }
+
       this.logger.log({ userId, path }, '[Avatar Upload]: Upload avatar');
+
       return { ...avatar };
-    } catch {
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
       throw new BadGatewayException('The file could not be uploaded');
     }
   }

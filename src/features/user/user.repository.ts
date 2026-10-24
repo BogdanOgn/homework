@@ -211,15 +211,43 @@ export class UserRepository {
   async avatarUpload(
     userId: string,
     path: string,
-  ): Promise<UserUploadAvatarResponse> {
-    const avatar = await this.prismaService.avatar.create({
-      data: {
-        userId,
-        path,
-      },
-    });
+  ): Promise<UserUploadAvatarResponse | { hasLimit: boolean }> {
+    try {
+      return await this.prismaService.$transaction(
+        async (tx) => {
+          const totalImages = await tx.avatar.count({
+            where: { userId, deletedAt: null },
+          });
 
-    return avatar;
+          if (totalImages >= 5) {
+            return { hasLimit: true };
+          }
+
+          const avatar = await tx.avatar.create({
+            data: {
+              userId,
+              path,
+            },
+          });
+
+          return avatar;
+        },
+        {
+          maxWait: 5000,
+          timeout: 10000,
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2034'
+      ) {
+        return { hasLimit: true };
+      }
+
+      throw error;
+    }
   }
 
   async avatarSoftDelete(avatarId: string, userId: string): Promise<void> {

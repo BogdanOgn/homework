@@ -6,6 +6,7 @@ import { FOLDERS } from './enums/folder.enum.js';
 import { RemoveManyFilesPayloadDto } from '@providers/files/s3/dto/remove-many-files-payload.dto.js';
 import { UploadFileResultDto } from '@providers/files/s3/dto/upload-file-result.dto.js';
 import type { IRemoveManyFilesResult } from '@providers/files/s3/interfaces/remove-many-files-result.interface.js';
+import { RemoveFilePayloadDto } from '@providers/files/s3/dto/remove-file-payload.dto.js';
 
 @Injectable()
 export class ImagesService {
@@ -22,6 +23,10 @@ export class ImagesService {
       folder,
       name,
     });
+  }
+
+  async removeImage(dto: RemoveFilePayloadDto): Promise<void> {
+    await this.fileService.removeFile(dto);
   }
 
   async removeManyImage(

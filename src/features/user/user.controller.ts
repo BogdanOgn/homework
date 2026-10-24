@@ -103,7 +103,7 @@ export class UserController {
     file: IUploadedMulterFile,
     @AuthorizedUserData() user: User,
   ): Promise<UserUploadAvatarResponse> {
-    return this.userService.avatarUpload(file, user.id);
+    return await this.userService.avatarUpload(file, user.id);
   }
 
   @ApiAvatarDelete()
