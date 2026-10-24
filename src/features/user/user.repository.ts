@@ -438,20 +438,31 @@ export class UserRepository {
     const pageSize = filters.pageSize ?? 10;
     const page = filters.page ?? 1;
 
-    const where = {
-      senderLogin: {
-        contains: filters.search,
-        mode: 'insensitive',
-      },
-      recipientLogin: {
-        contains: filters.search,
-        mode: 'insensitive',
-      },
+    const where: Prisma.BalanceTransactionWhereInput = {
+      AND: [
+        { OR: [{ senderId: userId }, { recipientId: userId }] },
+        {
+          OR: [
+            {
+              senderLogin: {
+                contains: filters.search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              recipientLogin: {
+                contains: filters.search,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+      ],
       sendedBalance: {
         gte: filters.minBalance,
         lte: filters.maxBalance,
       },
-    } as const;
+    };
 
     const orderBy = {
       [filters.sortBy ?? SORT_BY_BALANCE_TRANSFERS.CREATED_AT]:
@@ -460,10 +471,7 @@ export class UserRepository {
 
     const [total, history] = await Promise.all([
       this.prismaService.balanceTransaction.count({
-        where: {
-          OR: [{ senderId: userId }, { recipientId: userId }],
-          ...where,
-        },
+        where,
       }),
       this.prismaService.balanceTransaction.findMany({
         where,
