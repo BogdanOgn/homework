@@ -64,14 +64,14 @@ export class AuthService {
     const user = await this.userService.findByLoginWithPassword(login);
 
     if (!user) {
-      this.logger.warn(`[Login]: Failed user login for login - '${login}'`);
+      this.logger.warn({ login }, '[Login]: Failed user login');
       throw new UnauthorizedException('Incorrect credentials');
     }
 
     const verifyPassword = await bcrypt.compare(password, user.password);
 
     if (!verifyPassword) {
-      this.logger.warn(`[Login]: Failed user login - ${user.id}`);
+      this.logger.warn({ userId: user.id }, '[Login]: Failed user login');
       throw new UnauthorizedException('Incorrect credentials');
     }
 
@@ -127,7 +127,8 @@ export class AuthService {
       await this.cache.set(cacheKey, user, 30000);
     } else {
       this.logger.warn(
-        `[Мalidate]: Failed user validate, user not found - ${id}`,
+        { userId: id },
+        '[Validate]: Failed user validate, user not found',
       );
       throw new UnauthorizedException('User not found');
     }

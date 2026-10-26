@@ -112,14 +112,18 @@ export class UserService {
     file: IUploadedMulterFile,
     userId: string,
   ): Promise<UserUploadAvatarResponse> {
-    let path: string | undefined;
-    try {
-      const images = await this.userRepository.findAvatarsByUserId(userId);
-      if (images.length >= 5) {
-        throw new UnprocessableEntityException('Image upload limit exceeded');
-      }
-      ({ path } = await this.imagesService.uploadImage(file, FOLDERS.AVATARS));
+    const images = await this.userRepository.findAvatarsByUserId(userId);
 
+    if (images.length >= 5) {
+      throw new UnprocessableEntityException('Image upload limit exceeded');
+    }
+
+    const { path } = await this.imagesService.uploadImage(
+      file,
+      FOLDERS.AVATARS,
+    );
+
+    try {
       const avatar = await this.userRepository.avatarUpload(userId, path);
 
       if ('hasLimit' in avatar) {
@@ -128,15 +132,16 @@ export class UserService {
 
       this.logger.log({ userId, path }, '[Avatar Upload]: Upload avatar');
 
-      return { ...avatar };
-    } catch (error) {
-      if (path) {
-        await this.imagesService.removeImage({ path });
-      }
+      return avatar;
+    } catch (error: unknown) {
+      await this.imagesService.removeImage({ path });
 
       if (error instanceof HttpException) throw error;
 
-      this.logger.error('[Avatar Upload]: Failed to upload avatar');
+      this.logger.error(
+        { path, error },
+        '[Avatar Upload]: Failed to upload avatar',
+      );
 
       throw new BadGatewayException('The file could not be uploaded');
     }
@@ -174,7 +179,7 @@ export class UserService {
       }
 
       return restoredAvatar;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof HttpException) throw error;
 
       throw new BadGatewayException('The file could not be restored');

@@ -127,7 +127,7 @@ export class S3Service extends IFileService {
 
             resolve({ deleted, failed });
           } else {
-            // this.logger.error(`❌ File remove error with path: ${path}`);
+            this.logger.error({ paths }, `❌ File remove error`);
             reject(
               new RemoveException(
                 error instanceof Error ? error.message : undefined,

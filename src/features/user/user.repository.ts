@@ -211,7 +211,7 @@ export class UserRepository {
   async avatarUpload(
     userId: string,
     path: string,
-  ): Promise<UserUploadAvatarResponse | { hasLimit: boolean }> {
+  ): Promise<UserUploadAvatarResponse | { hasLimit: true }> {
     try {
       return await this.prismaService.$transaction(
         async (tx) => {
@@ -238,7 +238,7 @@ export class UserRepository {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
-    } catch (error) {
+    } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2034'
@@ -296,7 +296,7 @@ export class UserRepository {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
-    } catch (error) {
+    } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2034'
@@ -406,7 +406,7 @@ export class UserRepository {
     idempotencyKey: string,
   ): Promise<
     | IBalanceTransferResponse
-    | { idempotencyKeyException: boolean }
+    | { idempotencyKeyException: true }
     | { balanceException: true }
   > {
     try {
@@ -465,7 +465,7 @@ export class UserRepository {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           return { balanceException: true };
