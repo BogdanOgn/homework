@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -14,11 +15,13 @@ import {
   ITokenPayload,
   ITokensResponse,
 } from '@features/token/types/token.types.js';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger('AuthService');
   constructor(
+    @Inject(CACHE_MANAGER) private cache: Cache,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
   ) {}
@@ -50,6 +53,8 @@ export class AuthService {
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(user);
 
+    this.logger.log({ email }, '[Register]: Register user');
+
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
@@ -59,14 +64,14 @@ export class AuthService {
     const user = await this.userService.findByLoginWithPassword(login);
 
     if (!user) {
-      this.logger.warn(`[Login]: Failed user login for login - '${login}'`);
+      this.logger.warn({ login }, '[Login]: Failed user login');
       throw new UnauthorizedException('Incorrect credentials');
     }
 
     const verifyPassword = await bcrypt.compare(password, user.password);
 
     if (!verifyPassword) {
-      this.logger.log(`[Login]: Failed user login - ${user.id}`);
+      this.logger.warn({ userId: user.id }, '[Login]: Failed user login');
       throw new UnauthorizedException('Incorrect credentials');
     }
 
@@ -75,16 +80,25 @@ export class AuthService {
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(user);
 
+    this.logger.log({ login }, '[Login]: Login user');
+
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
   async logout(token: string): Promise<string> {
+    const { id } = await this.tokenService.validateRefreshToken(token);
+
+    await this.cache.del(`user:${id}`);
+
     await this.tokenService.deleteManyByToken(token);
     return 'OK';
   }
 
   async logoutAll(userId: string): Promise<string> {
     await this.tokenService.deleteManyByUserId(userId);
+
+    await this.cache.del(`user:${userId}`);
+
     return 'OK';
   }
 
@@ -98,15 +112,28 @@ export class AuthService {
   }
 
   async validate(id: string): Promise<UserResponse> {
+    const cacheKey = `user:${id}`;
+
+    const cached = await this.cache.get<UserResponse>(cacheKey);
+
+    if (cached) {
+      this.logger.log(`[Cache Hit]: ${cacheKey}`);
+      return cached;
+    }
+
     const user = await this.userService.findById(id);
 
-    if (!user) {
+    if (user) {
+      await this.cache.set(cacheKey, user, 30000);
+    } else {
       this.logger.warn(
-        `[Мalidate]: Failed user validate, user not found - ${id}`,
+        { userId: id },
+        '[Validate]: Failed user validate, user not found',
       );
       throw new UnauthorizedException('User not found');
     }
 
+    this.logger.log(`[Cache Miss]: ${cacheKey}`);
     return user;
   }
 }
