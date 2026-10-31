@@ -1,0 +1,2 @@
+export const AVATAR_UPLOAD_MAX_RETRY = 5;
+export const AVATAR_RESTORE_MAX_RETRY = 5;

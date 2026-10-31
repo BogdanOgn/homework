@@ -129,6 +129,11 @@ export class UserService {
       if ('hasLimit' in avatar) {
         throw new UnprocessableEntityException('Image upload limit exceeded');
       }
+      if ('isConflict' in avatar) {
+        throw new ConflictException(
+          'Too many concurrent avatar uploads, try again later',
+        );
+      }
 
       this.logger.log({ userId, path }, '[Avatar Upload]: Upload avatar');
 
@@ -177,7 +182,11 @@ export class UserService {
       if ('hasLimit' in restoredAvatar) {
         throw new UnprocessableEntityException('Image upload limit exceeded');
       }
-
+      if ('isConflict' in restoredAvatar) {
+        throw new ConflictException(
+          'Too many concurrent avatar restore, try again later',
+        );
+      }
       return restoredAvatar;
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error;

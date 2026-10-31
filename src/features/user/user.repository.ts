@@ -23,6 +23,11 @@ import { BalanceTransaction, Prisma } from '@generated/prisma/client.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto.js';
 import { ConfigService } from '@nestjs/config';
+import {
+  AVATAR_RESTORE_MAX_RETRY,
+  AVATAR_UPLOAD_MAX_RETRY,
+} from './constants/max-retry.constant.js';
+import { transactionWithRetry } from '../../common/helpers/transaction-with-retry.helper.js';
 
 @Injectable()
 export class UserRepository {
@@ -211,9 +216,11 @@ export class UserRepository {
   async avatarUpload(
     userId: string,
     path: string,
-  ): Promise<UserUploadAvatarResponse | { hasLimit: true }> {
-    try {
-      return await this.prismaService.$transaction(
+  ): Promise<
+    UserUploadAvatarResponse | { hasLimit: true } | { isConflict: true }
+  > {
+    return transactionWithRetry(() => {
+      return this.prismaService.$transaction(
         async (tx) => {
           const totalAvatars = await tx.avatar.count({
             where: { userId, deletedAt: null },
@@ -238,16 +245,7 @@ export class UserRepository {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
-    } catch (error: unknown) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2034'
-      ) {
-        return { hasLimit: true };
-      }
-
-      throw error;
-    }
+    }, AVATAR_UPLOAD_MAX_RETRY);
   }
 
   async avatarSoftDelete(avatarId: string, userId: string): Promise<void> {
@@ -265,9 +263,11 @@ export class UserRepository {
   async avatarRestore(
     avatarId: string,
     userId: string,
-  ): Promise<UserUploadAvatarResponse | { hasLimit: true }> {
-    try {
-      return await this.prismaService.$transaction(
+  ): Promise<
+    UserUploadAvatarResponse | { hasLimit: true } | { isConflict: true }
+  > {
+    return transactionWithRetry(() => {
+      return this.prismaService.$transaction(
         async (tx) => {
           const totalAvatars = await tx.avatar.count({
             where: {
@@ -296,16 +296,7 @@ export class UserRepository {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
-    } catch (error: unknown) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2034'
-      ) {
-        return { hasLimit: true };
-      }
-
-      throw error;
-    }
+    }, AVATAR_RESTORE_MAX_RETRY);
   }
 
   async findAllPathsDeletedAvatar(take: number): Promise<deletedAvatarPaths[]> {
