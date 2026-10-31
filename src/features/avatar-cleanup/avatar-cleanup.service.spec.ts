@@ -7,8 +7,13 @@ import { UserService } from '@features/user/user.service.js';
 import { ImagesService } from '@features/images/images.service.js';
 import type { deletedAvatarPaths } from '@features/user/types/user.types.js';
 import { AvatarCleanupService } from './avatar-cleanup.service.js';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 
-const avatarsDeleteSize = '2';
+const config: Record<string, string> = {
+  AVATARS_DELETE_SIZE: '2',
+  AVATARS_CRON_EXPRESSION: '0 3 * * *',
+};
 
 const firstBatch: deletedAvatarPaths[] = [
   { id: 'avatar-1', Key: 'avatars/avatar-1.png' },
@@ -24,6 +29,7 @@ describe('AvatarCleanupService', () => {
   let avatarsQueue: Queue;
   let userService: UserService;
   let imagesService: ImagesService;
+  let schedulerRegistry: SchedulerRegistry;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -31,6 +37,10 @@ describe('AvatarCleanupService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         AvatarCleanupService,
+        {
+          provide: SchedulerRegistry,
+          useValue: { addCronJob: vi.fn() },
+        },
         {
           provide: getQueueToken('avatars'),
           useValue: {
@@ -40,7 +50,7 @@ describe('AvatarCleanupService', () => {
         {
           provide: ConfigService,
           useValue: {
-            getOrThrow: vi.fn().mockReturnValue(avatarsDeleteSize),
+            getOrThrow: vi.fn((key: string) => config[key]),
           },
         },
         {
@@ -63,6 +73,7 @@ describe('AvatarCleanupService', () => {
     avatarsQueue = moduleRef.get(getQueueToken('avatars'));
     userService = moduleRef.get(UserService);
     imagesService = moduleRef.get(ImagesService);
+    schedulerRegistry = moduleRef.get(SchedulerRegistry);
   });
 
   describe('addCleanupQueue', () => {
@@ -81,16 +92,19 @@ describe('AvatarCleanupService', () => {
     });
   });
 
-  describe('cronCleanup', () => {
-    it('add cleanup job to queue', async () => {
-      await avatarCleanupService.cronCleanup();
+  describe('onModuleInit', () => {
+    it('register cron job with expression from env', () => {
+      avatarCleanupService.onModuleInit();
 
-      expect(avatarsQueue.add).toHaveBeenCalledTimes(1);
-      expect(avatarsQueue.add).toHaveBeenCalledWith(
-        'cleanup',
-        {},
-        expect.any(Object),
-      );
+      expect(schedulerRegistry.addCronJob).toHaveBeenCalledTimes(1);
+
+      const [name, job] = vi.mocked(schedulerRegistry.addCronJob).mock.calls[0];
+
+      expect(name).toBe('cleanup');
+      expect(job).toBeInstanceOf(CronJob);
+      expect(job.cronTime.source).toBe(config.AVATARS_CRON_EXPRESSION);
+
+      void job.stop();
     });
   });
 
@@ -167,7 +181,7 @@ describe('AvatarCleanupService', () => {
       ]);
     });
 
-    it('stop when no files in batch were removed from s3', async () => {
+    it('throw when no files in batch were removed from s3', async () => {
       vi.mocked(userService.findAllPathsDeletedAvatar).mockResolvedValue(
         firstBatch,
       );
@@ -176,9 +190,9 @@ describe('AvatarCleanupService', () => {
         failed: ['avatars/avatar-1.png', 'avatars/avatar-2.png'],
       });
 
-      await expect(avatarCleanupService.clearDeletedAvatars()).resolves.toEqual(
-        { deletedLength: 0 },
-      );
+      await expect(
+        avatarCleanupService.clearDeletedAvatars(),
+      ).rejects.toThrow();
 
       expect(imagesService.removeManyImage).toHaveBeenCalledTimes(1);
       expect(userService.clearAllDeletedAvatar).not.toHaveBeenCalled();

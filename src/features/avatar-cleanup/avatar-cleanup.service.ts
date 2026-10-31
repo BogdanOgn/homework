@@ -2,17 +2,20 @@ import { ImagesService } from '@features/images/images.service.js';
 import { UserService } from '@features/user/user.service.js';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Queue } from 'bullmq';
 import { RemovedAvatarsResponse } from './types/avatar.types.js';
 import { ConfigService } from '@nestjs/config';
+import { CronJob } from 'cron';
 
 @Injectable()
 export class AvatarCleanupService {
   private readonly AVATARS_DELETE_SIZE: string;
+  private readonly AVATARS_CRON_EXPRESSION: string;
 
   constructor(
     @InjectQueue('avatars') private avatarsQueue: Queue,
+    private schedulerRegistry: SchedulerRegistry,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly imagesService: ImagesService,
@@ -20,6 +23,18 @@ export class AvatarCleanupService {
     this.AVATARS_DELETE_SIZE = this.configService.getOrThrow<string>(
       'AVATARS_DELETE_SIZE',
     );
+    this.AVATARS_CRON_EXPRESSION = this.configService.getOrThrow<string>(
+      'AVATARS_CRON_EXPRESSION',
+    );
+  }
+
+  onModuleInit(): void {
+    const job = new CronJob(this.AVATARS_CRON_EXPRESSION, () =>
+      this.addCleanupQueue(),
+    );
+
+    this.schedulerRegistry.addCronJob('cleanup', job);
+    job.start();
   }
 
   async addCleanupQueue(): Promise<void> {
@@ -32,11 +47,6 @@ export class AvatarCleanupService {
         removeOnComplete: true,
       },
     );
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  async cronCleanup(): Promise<void> {
-    await this.addCleanupQueue();
   }
 
   async clearDeletedAvatars(): Promise<RemovedAvatarsResponse> {
