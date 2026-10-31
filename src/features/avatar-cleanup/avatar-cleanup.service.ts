@@ -54,7 +54,11 @@ export class AvatarCleanupService {
         paths: avatarPaths,
       });
 
-      if (!deletedAvatars.deleted.length) break;
+      if (!deletedAvatars.deleted.length) {
+        throw new Error(
+          `Failed remove avatars: ${deletedAvatars.failed.length}/${avatars.length} failed`,
+        );
+      }
 
       await this.userService.clearAllDeletedAvatar(deletedAvatars.deleted);
 
