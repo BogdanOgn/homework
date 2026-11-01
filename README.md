@@ -40,6 +40,17 @@ $ npx prisma migrate deploy
 $ npx prisma studio
 ```
 
+## Хранилище файлов (MinIO)
+
+Аватары хранятся в MinIO (S3-совместимое хранилище), который поднимается вместе с базой через `docker compose up -d`.
+
+- Веб-консоль: `http://localhost:9001`
+- S3 API: `http://localhost:9000`
+- Логин: `minioadmin`
+- Пароль: `minioadmin`
+
+Имя бакета задаётся переменной `S3_BUCKET_NAME` в `.env`.
+
 ## Запуск проекта
 
 ```bash

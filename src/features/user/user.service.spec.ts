@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from '@features/token/token.service.js';
 import { UserService } from './user.service.js';
 import { UserRepository } from './user.repository.js';
+import { ImagesService } from '@features/images/images.service.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 import type { UserResponse } from './types/user.types.js';
+import { Prisma } from '@generated/prisma/client.js';
 
 vi.mock('bcrypt');
 
@@ -17,6 +20,7 @@ const userResponse: UserResponse = {
   email: 'johndoe@gmail.com',
   age: 24,
   aboutDescription: 'Lorem ipsum dolor sit amet',
+  balance: new Prisma.Decimal(0),
   createdAt: new Date('2026-09-01T13:58:51.326Z'),
   updatedAt: new Date('2026-09-01T13:58:51.326Z'),
   deletedAt: null,
@@ -26,6 +30,7 @@ describe('UserService', () => {
   let userService: UserService;
   let userRepository: UserRepository;
   let tokenService: TokenService;
+  let cache: Cache;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -33,6 +38,14 @@ describe('UserService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         UserService,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            get: vi.fn(),
+            set: vi.fn(),
+            del: vi.fn(),
+          },
+        },
         {
           provide: UserRepository,
           useValue: {
@@ -46,12 +59,17 @@ describe('UserService', () => {
             deleteManyByUserId: vi.fn(),
           },
         },
+        {
+          provide: ImagesService,
+          useValue: {},
+        },
       ],
     }).compile();
 
     userService = moduleRef.get(UserService);
     userRepository = moduleRef.get(UserRepository);
     tokenService = moduleRef.get(TokenService);
+    cache = moduleRef.get(CACHE_MANAGER);
   });
 
   describe('update', () => {
@@ -68,6 +86,7 @@ describe('UserService', () => {
         login: 'new login',
         password: 'hashed-password',
       });
+      expect(cache.del).toHaveBeenCalledWith(`user:${userId}`);
     });
 
     it('update user without password', async () => {
@@ -87,6 +106,7 @@ describe('UserService', () => {
 
       expect(userRepository.softDelete).toHaveBeenCalledWith(userId);
       expect(tokenService.deleteManyByUserId).toHaveBeenCalledWith(userId);
+      expect(cache.del).toHaveBeenCalledWith(`user:${userId}`);
     });
   });
 });

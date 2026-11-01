@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
-import type { User } from '@generated/prisma/client.js';
+import { Prisma, type User } from '@generated/prisma/client.js';
 import { UserController } from './user.controller.js';
 import { UserService } from './user.service.js';
 import { UsersFiltersDto } from './dto/users-filters.dto.js';
@@ -16,6 +16,7 @@ const authorizedUser: User = {
   password: 'password',
   age: 24,
   aboutDescription: 'Lorem ipsum dolor sit amet',
+  balance: new Prisma.Decimal(0),
   createdAt: new Date('2026-09-01T13:58:51.326Z'),
   updatedAt: new Date('2026-09-01T13:58:51.326Z'),
   deletedAt: null,

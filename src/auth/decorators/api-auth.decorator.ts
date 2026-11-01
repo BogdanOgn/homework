@@ -3,6 +3,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCookieAuth,
+  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
@@ -14,10 +15,32 @@ import { RefreshTokenAuthorization } from './authorization.decorator.js';
 export const ApiRegister = () => {
   return applyDecorators(
     ApiOperation({ summary: 'Register new user' }),
-    ApiOkResponse({ type: AuthResponseDto }),
+    ApiCreatedResponse({ type: AuthResponseDto }),
     ApiBadRequestResponse({ description: 'Incorrect credentials' }),
     ApiConflictResponse({
-      description: 'User with this login already existing',
+      description: 'Conflict request',
+      content: {
+        'application/json': {
+          examples: {
+            emailAlredyExist: {
+              summary: 'Passed email already exist',
+              value: {
+                statusCode: 409,
+                message: 'User with this email already existing',
+                error: 'Conflict',
+              },
+            },
+            usernameAlredyExist: {
+              summary: 'Passed username alredy exist',
+              value: {
+                statusCode: 409,
+                message: 'User with this username already existing',
+                error: 'Conflict',
+              },
+            },
+          },
+        },
+      },
     }),
     Throttle({ default: { limit: 3, ttl: 60000 } }),
     Post('register'),

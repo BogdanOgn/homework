@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import type { CookieOptions, Response } from 'express';
-import type { User } from '@generated/prisma/client.js';
+import { Prisma, type User } from '@generated/prisma/client.js';
 import type { RefreshAuthorizedUser } from '@features/user/types/user.types.js';
 
 const userId = 'fe46a3d6-7f2a-41d4-b008-e7b8265c7de8';
@@ -44,6 +44,7 @@ const authorizedUser: User = {
   password: registerRequest.password,
   age: registerRequest.age,
   aboutDescription: null,
+  balance: new Prisma.Decimal(0),
   createdAt: new Date('2026-09-01T13:58:51.326Z'),
   updatedAt: new Date('2026-09-01T13:58:51.326Z'),
   deletedAt: null,

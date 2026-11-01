@@ -17,6 +17,7 @@ export default defineConfig({
       '@configs': resolve(root, 'src/configs'),
       '@features': resolve(root, 'src/features'),
       '@generated': resolve(root, 'src/generated'),
+      '@providers': resolve(root, 'src/providers'),
     },
   },
 });
