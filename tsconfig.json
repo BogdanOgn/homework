@@ -13,9 +13,7 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
     "incremental": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,14 +21,13 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@auth/*": ["./src/auth/*"],
-      "@common/*": ["./src/common/*"],
-      "@configs/*": ["./src/configs/*"],
-      "@features/*": ["./src/features/*"],
-      "@generated/*": ["./src/generated/*"],
-      "@providers/*": ["./src/providers/*"]
+      "@auth/*": ["./apps/user-service/src/auth/*"],
+      "@common/*": ["./apps/user-service/src/common/*"],
+      "@configs/*": ["./apps/user-service/src/configs/*"],
+      "@features/*": ["./apps/user-service/src/features/*"],
+      "@generated/*": ["./apps/user-service/src/generated/*"],
+      "@providers/*": ["./apps/user-service/src/providers/*"]
     }
   },
-  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
