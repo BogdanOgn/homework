@@ -13,6 +13,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id                    String               @id @default(uuid())
   login                 String               @unique
@@ -25,6 +30,7 @@ model User {
   avatars               Avatar[]
   senderTransactions    BalanceTransaction[] @relation(name: "Sender")
   recipientTransactions BalanceTransaction[] @relation(name: "Recipient")
+  role                  Role                 @default(USER)
   createdAt             DateTime             @default(now()) @map("created_at")
   updatedAt             DateTime             @updatedAt @map("updated_at")
   deletedAt             DateTime?            @map("deleted_at")
