@@ -49,7 +49,7 @@ export class UserService {
   ) {}
 
   async create(dto: ICreateUserData): Promise<UserResponse> {
-    const user = this.userRepository.create(dto);
+    const user = await this.userRepository.create(dto);
     await this.invalidateListCache();
 
     return user;
