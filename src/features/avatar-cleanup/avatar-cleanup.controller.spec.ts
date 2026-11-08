@@ -16,7 +16,7 @@ describe('AvatarCleanupController', () => {
         {
           provide: AvatarCleanupService,
           useValue: {
-            clearDeletedAvatars: vi.fn(),
+            addCleanupQueue: vi.fn(),
           },
         },
       ],
@@ -27,16 +27,12 @@ describe('AvatarCleanupController', () => {
   });
 
   describe('cleanup', () => {
-    it('return count of removed avatars', async () => {
-      vi.mocked(avatarCleanupService.clearDeletedAvatars).mockResolvedValue({
-        deletedLength: 3,
-      });
+    it('add cleanup job to queue', async () => {
+      vi.mocked(avatarCleanupService.addCleanupQueue).mockResolvedValue();
 
-      await expect(avatarCleanupController.cleanup()).resolves.toEqual({
-        deletedLength: 3,
-      });
+      await expect(avatarCleanupController.cleanup()).resolves.toBeUndefined();
 
-      expect(avatarCleanupService.clearDeletedAvatars).toHaveBeenCalledTimes(1);
+      expect(avatarCleanupService.addCleanupQueue).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -12,6 +12,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import * as bcrypt from 'bcrypt';
 import { ITokenPayload } from '@features/token/types/token.types.js';
 import { Prisma } from '@generated/prisma/client.js';
+import { Role } from '@generated/prisma/enums.js';
 
 vi.mock('bcrypt');
 
@@ -35,6 +36,7 @@ const userResponse: UserResponse = {
   age: 24,
   aboutDescription: 'Lorem ipsum dolor sit amet',
   balance: new Prisma.Decimal(0),
+  role: Role.USER,
   createdAt: new Date('2026-09-01T13:58:51.326Z'),
   updatedAt: new Date('2026-09-01T13:58:51.326Z'),
   deletedAt: null,
