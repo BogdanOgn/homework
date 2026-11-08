@@ -42,6 +42,7 @@ export class AvatarCleanupService {
       'cleanup',
       {},
       {
+        deduplication: { id: 'cleanup' },
         attempts: 5,
         backoff: { type: 'exponential', delay: 1_000 },
         removeOnComplete: true,
