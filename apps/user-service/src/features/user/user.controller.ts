@@ -35,7 +35,6 @@ import { UsersListResponseDto } from './dto/users-list-response.dto.js';
 import type { IUploadedMulterFile } from '@providers/files/s3/interfaces/upload-file.interface.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
-import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { IdempotencyKey } from '@common/decorators/idempotency-key.decorator.js';
@@ -56,7 +55,7 @@ export class UserController {
   @ApiFindActiveUsers()
   async findActiveUsers(
     @Query() filters: UserActiveFiltersDto,
-  ): Promise<UsersListActiveResponseDto> {
+  ): Promise<UsersListResponseDto> {
     return this.userService.findActiveUsers(filters);
   }
 
