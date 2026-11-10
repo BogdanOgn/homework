@@ -29,7 +29,6 @@ import { ImagesService } from '@features/images/images.service.js';
 import { FOLDERS } from '@features/images/enums/folder.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
-import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
@@ -217,11 +216,11 @@ export class UserService {
 
   async findActiveUsers(
     filters: UserActiveFiltersDto,
-  ): Promise<UsersListActiveResponseDto> {
+  ): Promise<UsersListResponseDto> {
     const version = await this.getCacheVersion();
     const cacheKey = `activeUsers:${version}:${JSON.stringify(filters)}`;
 
-    const cached = await this.cache.get<UsersListActiveResponseDto>(cacheKey);
+    const cached = await this.cache.get<UsersListResponseDto>(cacheKey);
 
     if (cached) {
       this.logger.log(`[Cache Hit]: ${cacheKey}`);

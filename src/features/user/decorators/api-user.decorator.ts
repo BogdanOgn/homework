@@ -31,7 +31,6 @@ import { UsersListResponseDto } from '../dto/users-list-response.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserUploadAvatarResponseDto } from '../dto/user-upload-avatar-response.dto.js';
 import { UserUploadAvatarDto } from '../dto/user-upload-avatar.dto.js';
-import { UsersListActiveResponseDto } from '../dto/users-list-active-response.dto.js';
 import { UserBalanceTransferResponseDto } from '../dto/user-balance-transfer-response.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from '../dto/user-balance-transfer-history-list-response.dto.js';
 
@@ -186,8 +185,7 @@ export const ApiFindActiveUsers = () => {
       summary: 'Get all active users',
     }),
     ApiOkResponse({
-      type: UsersListActiveResponseDto,
-      isArray: true,
+      type: UsersListResponseDto,
     }),
     Get('/active'),
     HttpCode(HttpStatus.OK),

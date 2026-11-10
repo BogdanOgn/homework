@@ -18,7 +18,6 @@ import {
 import { SORT_ORDER } from './enums/sort-order.enum.js';
 import { UserAvatarFilters } from './dto/user-avatar-filters.dto.js';
 import { UserActiveFiltersDto } from './dto/user-active-filters.dto.js';
-import { UsersListActiveResponseDto } from './dto/users-list-active-response.dto.js';
 import { BalanceTransaction, Prisma } from '@generated/prisma/client.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto.js';
@@ -74,6 +73,7 @@ export class UserRepository {
       this.prismaService.user.findMany({
         omit: {
           password: true,
+          role: true,
         },
         where,
         include: {
@@ -327,7 +327,7 @@ export class UserRepository {
 
   async findActiveUsers(
     filters: UserActiveFiltersDto,
-  ): Promise<UsersListActiveResponseDto> {
+  ): Promise<UsersListResponseDto> {
     const pageSize = filters.pageSize ?? 10;
     const page = filters.page ?? 1;
 
@@ -358,6 +358,7 @@ export class UserRepository {
       this.prismaService.user.findMany({
         omit: {
           password: true,
+          role: true,
         },
         where,
 

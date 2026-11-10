@@ -28,7 +28,7 @@ const { password: _password, ...userResponse }: User = authorizedUser;
 const filters: UsersFiltersDto = { page: 1, pageSize: 10 };
 
 const findAllResult: UsersListResponseDto = {
-  users: [userResponse],
+  users: [{ ...userResponse, avatars: [] }],
   total: 42,
   pageSize: 10,
   page: 1,
