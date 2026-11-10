@@ -1,12 +1,10 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
-import { SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import cookieParser from 'cookie-parser';
-import { getSwaggerConfig } from './configs/swagger.config.js';
-import { HttpExсeptionFilter } from '@common/filters/http-exception.filter.js';
+import { HttpExceptionFilter, setupSwagger } from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -20,15 +18,16 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.useGlobalFilters(new HttpExсeptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
-  const config = getSwaggerConfig();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory, {
-    jsonDocumentUrl: '/swagger.json',
-    yamlDocumentUrl: '/swagger.yaml',
+  setupSwagger(app, {
+    appName: 'User Service',
+    tags: [
+      { name: 'Auth', description: 'User auth operations' },
+      { name: 'User', description: 'User operations' },
+      { name: 'AvatarCleanup', description: 'User avatar cleanup operations' },
+    ],
   });
-
   app.enableShutdownHooks();
 
   await app.listen(process.env.USER_SERVICE_PORT ?? 3000);

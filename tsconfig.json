@@ -21,13 +21,16 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@app/common": ["libs/common/src/index.ts"],
+      "@app/common/*": ["libs/common/src/*"],
       "@auth/*": ["./apps/user-service/src/auth/*"],
       "@common/*": ["./apps/user-service/src/common/*"],
       "@configs/*": ["./apps/user-service/src/configs/*"],
       "@features/*": ["./apps/user-service/src/features/*"],
       "@generated/*": ["./apps/user-service/src/generated/*"],
       "@providers/*": ["./apps/user-service/src/providers/*"]
-    }
+    },
+    "baseUrl": "./"
   },
   "exclude": ["node_modules", "dist"]
 }

@@ -1,4 +1,4 @@
-import { AccessTokenAuthorization } from '@auth/decorators/authorization.decorator.js';
+import { AccessTokenAuthorization } from '@app/common';
 import { Role } from '@generated/prisma/enums.js';
 import { applyDecorators, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {

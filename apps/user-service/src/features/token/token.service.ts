@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { CookieOptions } from 'express';
 import ms, { StringValue } from 'ms';
 import { RefreshToken } from '@generated/prisma/client.js';
-import { isDev } from '@common/utils/is-dev.util.js';
+import { isDev } from '@app/common';
 import { ITokenPayload, ITokensResponse } from './types/token.types.js';
 import { TokenRepository } from './token.repository.js';
 import { hashToken } from './utils/hash-token.util.js';

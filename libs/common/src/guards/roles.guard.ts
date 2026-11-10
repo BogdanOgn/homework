@@ -1,8 +1,7 @@
-import { ROLE_KEY } from '@auth/constants/role.constant.js';
-import { RequestWithUser } from '@features/user/types/user.types.js';
-import { Role } from '@generated/prisma/enums.js';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ROLE_KEY } from '../constants/index.js';
+import { RequestWithUser, Role } from '../types/index.js';
 
 @Injectable()
 export class RoleGuard implements CanActivate {

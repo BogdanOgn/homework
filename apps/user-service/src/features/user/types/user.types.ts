@@ -36,8 +36,6 @@ export type RefreshAuthorizedUser = UserResponse & { refreshToken: string };
 
 export type RequestUser = AuthorizedUser & { refreshToken?: string };
 
-export type RequestWithUser = Request & { user?: RequestUser };
-
 export type deletedAvatarPaths = { Key: string; id: string };
 
 export type UserBalanceTransferHistoryResponse = BalanceTransaction;

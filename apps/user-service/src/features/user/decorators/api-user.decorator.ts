@@ -25,7 +25,6 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
-import { AccessTokenAuthorization } from '@auth/decorators/authorization.decorator.js';
 import { UserResponseDto } from '@features/user/dto/user-response.dto.js';
 import { UsersListResponseDto } from '../dto/users-list-response.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -33,6 +32,7 @@ import { UserUploadAvatarResponseDto } from '../dto/user-upload-avatar-response.
 import { UserUploadAvatarDto } from '../dto/user-upload-avatar.dto.js';
 import { UserBalanceTransferResponseDto } from '../dto/user-balance-transfer-response.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from '../dto/user-balance-transfer-history-list-response.dto.js';
+import { AccessTokenAuthorization } from '@app/common';
 
 export const ApiMe = () => {
   return applyDecorators(

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AuthResponseDto } from '../dto/auth.dto.js';
-import { RefreshTokenAuthorization } from './authorization.decorator.js';
+import { RefreshTokenAuthorization } from '@app/common';
 
 export const ApiRegister = () => {
   return applyDecorators(
