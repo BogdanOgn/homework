@@ -1,4 +1,4 @@
-import { Body, Controller, Logger, Res } from '@nestjs/common';
+import { Body, Controller, Res } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { ApiTags } from '@nestjs/swagger';
 import { RegisterUserDto } from './dto/register-user.dto.js';
@@ -20,8 +20,6 @@ import { IAccessTokenResponse } from '@features/token/types/token.types.js';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  private readonly logger = new Logger('AuthController');
-
   constructor(
     private readonly authService: AuthService,
     private readonly tokenService: TokenService,
@@ -39,7 +37,6 @@ export class AuthController {
       this.tokenService.getRefreshTokenCookie(),
     );
 
-    this.logger.log(`[Register]: Register user with email - ${dto.email}`);
     return { accessToken };
   }
 
@@ -55,7 +52,6 @@ export class AuthController {
       this.tokenService.getRefreshTokenCookie(),
     );
 
-    this.logger.log(`[Login]: Login user with login - ${dto.login}`);
     return { accessToken };
   }
 
@@ -67,7 +63,6 @@ export class AuthController {
     res.clearCookie('refreshToken', this.tokenService.getRefreshTokenCookie());
     await this.authService.logout(user.refreshToken);
 
-    this.logger.log(`[Logout]: Logout user account - ${user.id}`);
     return 'OK';
   }
 
@@ -79,9 +74,6 @@ export class AuthController {
     res.clearCookie('refreshToken', this.tokenService.getRefreshTokenCookie());
     await this.authService.logoutAll(user.id);
 
-    this.logger.log(
-      `[Logout All]: Logout from all users accounts - ${user.id}`,
-    );
     return 'OK';
   }
 
@@ -100,7 +92,6 @@ export class AuthController {
       this.tokenService.getRefreshTokenCookie(),
     );
 
-    this.logger.log(`[Refresh]: Tokens refreshed for user - ${user.id}`);
     return { accessToken };
   }
 }

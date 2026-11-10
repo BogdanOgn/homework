@@ -1,4 +1,5 @@
-import { User } from '@generated/prisma/client.js';
+import { Avatar, BalanceTransaction, User } from '@generated/prisma/client.js';
+import { Request } from 'express';
 
 export interface ICreateUserData {
   login: string;
@@ -8,9 +9,24 @@ export interface ICreateUserData {
   aboutDescription?: string;
 }
 
+export interface IBalanceTransferResponse {
+  oldBalance: number;
+  newBalance: number;
+  senderLogin: string;
+  recipientLogin: string;
+}
+
 export type UpdateUserData = Partial<ICreateUserData>;
 
+export type UserUploadAvatarResponse = Avatar;
+
+export type PublicUserResponseWithAvatars = PublicUserResponse & {
+  avatars: UserUploadAvatarResponse[];
+};
+
 export type UserResponse = Omit<User, 'password'>;
+
+export type PublicUserResponse = Omit<UserResponse, 'role'>;
 
 export type UserResponseWithPassword = User;
 
@@ -19,3 +35,9 @@ export type AuthorizedUser = UserResponse;
 export type RefreshAuthorizedUser = UserResponse & { refreshToken: string };
 
 export type RequestUser = AuthorizedUser & { refreshToken?: string };
+
+export type RequestWithUser = Request & { user?: RequestUser };
+
+export type deletedAvatarPaths = { Key: string; id: string };
+
+export type UserBalanceTransferHistoryResponse = BalanceTransaction;

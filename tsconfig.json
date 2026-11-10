@@ -27,7 +27,8 @@
       "@common/*": ["./src/common/*"],
       "@configs/*": ["./src/configs/*"],
       "@features/*": ["./src/features/*"],
-      "@generated/*": ["./src/generated/*"]
+      "@generated/*": ["./src/generated/*"],
+      "@providers/*": ["./src/providers/*"]
     }
   },
   "include": ["src/**/*"],

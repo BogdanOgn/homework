@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserResponseDto } from '@features/user/dto/user-response.dto.js';
-import type { UserResponse } from '../types/user.types.js';
+import type { PublicUserResponseWithAvatars } from '../types/user.types.js';
+import { UserActiveResponseDto } from './user-active-response.dto.js';
 
 export class UsersListResponseDto {
   @ApiProperty({
     description: 'users page',
-    type: [UserResponseDto],
+    type: [UserActiveResponseDto],
   })
-  users!: UserResponse[];
+  users!: PublicUserResponseWithAvatars[];
 
   @ApiProperty({
     description: 'total users matched by filters',
