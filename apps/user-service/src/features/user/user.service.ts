@@ -34,10 +34,12 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { UserBalanceTransferDto } from './dto/user-balance-transfer.dto.js';
 import { UserBalanceTransferHistoryFiltersDto } from './dto/user-balance-transfer-history-filters.dto.js';
 import { UserBalanceTransferHistoryListResponseDto } from './dto/user-balance-transfer-history-list-response.dto.js';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger('UserService');
+  private readonly LIST_VERSION = 'user:list';
 
   constructor(
     @Inject(CACHE_MANAGER) private cache: Cache,
@@ -47,11 +49,15 @@ export class UserService {
   ) {}
 
   async create(dto: ICreateUserData): Promise<UserResponse> {
-    return this.userRepository.create(dto);
+    const user = await this.userRepository.create(dto);
+    await this.invalidateListCache();
+
+    return user;
   }
 
   async findMany(filters: UsersFiltersDto): Promise<UsersListResponseDto> {
-    const cacheKey = `users:${JSON.stringify(filters)}`;
+    const version = await this.getCacheVersion();
+    const cacheKey = `users:${version}:${JSON.stringify(filters)}`;
 
     const cached = await this.cache.get<UsersListResponseDto>(cacheKey);
 
@@ -92,7 +98,7 @@ export class UserService {
   async softDelete(id: string): Promise<string> {
     await this.userRepository.softDelete(id);
     await this.tokenService.deleteManyByUserId(id);
-    await this.cache.del(`user:${id}`);
+    await this.invalidateListCache(id);
 
     return 'OK';
   }
@@ -103,7 +109,7 @@ export class UserService {
       : dto;
 
     const user = await this.userRepository.update(id, updatedData);
-    await this.cache.del(`user:${id}`);
+    await this.invalidateListCache(id);
 
     return user;
   }
@@ -135,6 +141,8 @@ export class UserService {
         );
       }
 
+      await this.invalidateListCache(userId);
+
       this.logger.log({ userId, path }, '[Avatar Upload]: Upload avatar');
 
       return avatar;
@@ -154,6 +162,8 @@ export class UserService {
 
   async avatarSoftDelete(avatarId: string, userId: string): Promise<string> {
     await this.userRepository.avatarSoftDelete(avatarId, userId);
+    await this.invalidateListCache(userId);
+
     return 'OK';
   }
 
@@ -187,6 +197,9 @@ export class UserService {
           'Too many concurrent avatar restore, try again later',
         );
       }
+
+      await this.invalidateListCache(userId);
+
       return restoredAvatar;
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error;
@@ -205,7 +218,8 @@ export class UserService {
   async findActiveUsers(
     filters: UserActiveFiltersDto,
   ): Promise<UsersListActiveResponseDto> {
-    const cacheKey = `activeUsers:${JSON.stringify(filters)}`;
+    const version = await this.getCacheVersion();
+    const cacheKey = `activeUsers:${version}:${JSON.stringify(filters)}`;
 
     const cached = await this.cache.get<UsersListActiveResponseDto>(cacheKey);
 
@@ -269,6 +283,8 @@ export class UserService {
       throw new BadRequestException('Not enough balance');
     }
 
+    await this.invalidateListCache(userId, recipientId);
+
     this.logger.log(
       { userId, recipient: recipientId },
       '[Balance Transfer]: Transfer balanсe',
@@ -290,5 +306,16 @@ export class UserService {
 
   async clearAllDeletedAvatar(paths: string[]): Promise<void> {
     await this.userRepository.clearAllDeletedAvatar(paths);
+  }
+
+  private async getCacheVersion(): Promise<string> {
+    return (await this.cache.get(this.LIST_VERSION)) ?? '0';
+  }
+
+  private async invalidateListCache(...userIds: string[]): Promise<void> {
+    await Promise.all([
+      this.cache.set(this.LIST_VERSION, randomUUID(), 60000),
+      ...userIds.map((id) => this.cache.del(`user:${id}`)),
+    ]);
   }
 }

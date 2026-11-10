@@ -79,7 +79,7 @@ export const ApiDelete = () => {
     }),
     ApiBearerAuth(),
     SkipThrottle(),
-    Delete(':id'),
+    Delete(),
     HttpCode(HttpStatus.OK),
   );
 };
@@ -95,7 +95,7 @@ export const ApiUpdate = () => {
     ApiOkResponse({ type: UserResponseDto }),
     ApiBearerAuth(),
     Throttle({ default: { limit: 10, ttl: 60000 } }),
-    Patch(':id'),
+    Patch(),
     HttpCode(HttpStatus.OK),
   );
 };

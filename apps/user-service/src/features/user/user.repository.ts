@@ -206,7 +206,7 @@ export class UserRepository {
     const avatar = await this.prismaService.avatar.findFirst({
       where: {
         id: avatarId,
-        deletedAt: { not: null },
+        deletedAt: { not: null, gt: this.getAvatarTTLCondition() },
       },
     });
 
@@ -284,6 +284,7 @@ export class UserRepository {
             where: {
               id: avatarId,
               userId,
+              deletedAt: { not: null, gt: this.getAvatarTTLCondition() },
             },
             data: {
               deletedAt: null,
@@ -300,12 +301,8 @@ export class UserRepository {
   }
 
   async findAllPathsDeletedAvatar(take: number): Promise<deletedAvatarPaths[]> {
-    const ttlCondition = new Date(
-      Date.now() - Number(this.AVATARS_DELETED_TTL),
-    );
-
     const deletedAvatars = await this.prismaService.avatar.findMany({
-      where: { deletedAt: { not: null, lte: ttlCondition } },
+      where: { deletedAt: { not: null, lte: this.getAvatarTTLCondition() } },
       take,
       orderBy: {
         id: SORT_ORDER.ASC,
@@ -324,7 +321,7 @@ export class UserRepository {
 
   async clearAllDeletedAvatar(paths: string[]): Promise<void> {
     await this.prismaService.avatar.deleteMany({
-      where: { path: { in: paths } },
+      where: { path: { in: paths }, deletedAt: { not: null } },
     });
   }
 
@@ -577,5 +574,9 @@ export class UserRepository {
     }
 
     return this.transferResponse(existingTransaction);
+  }
+
+  private getAvatarTTLCondition(): Date {
+    return new Date(Date.now() - Number(this.AVATARS_DELETED_TTL));
   }
 }

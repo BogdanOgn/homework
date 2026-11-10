@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import type { CookieOptions, Response } from 'express';
 import { Prisma, type User } from '@generated/prisma/client.js';
+import { Role } from '@generated/prisma/enums.js';
 import type { RefreshAuthorizedUser } from '@features/user/types/user.types.js';
 
 const userId = 'fe46a3d6-7f2a-41d4-b008-e7b8265c7de8';
@@ -45,6 +46,7 @@ const authorizedUser: User = {
   age: registerRequest.age,
   aboutDescription: null,
   balance: new Prisma.Decimal(0),
+  role: Role.USER,
   createdAt: new Date('2026-09-01T13:58:51.326Z'),
   updatedAt: new Date('2026-09-01T13:58:51.326Z'),
   deletedAt: null,

@@ -9,6 +9,7 @@ import { ImagesService } from '@features/images/images.service.js';
 import { UserUpdateDto } from './dto/user-update.dto.js';
 import type { UserResponse } from './types/user.types.js';
 import { Prisma } from '@generated/prisma/client.js';
+import { Role } from '@generated/prisma/enums.js';
 
 vi.mock('bcrypt');
 
@@ -21,6 +22,7 @@ const userResponse: UserResponse = {
   age: 24,
   aboutDescription: 'Lorem ipsum dolor sit amet',
   balance: new Prisma.Decimal(0),
+  role: Role.USER,
   createdAt: new Date('2026-09-01T13:58:51.326Z'),
   updatedAt: new Date('2026-09-01T13:58:51.326Z'),
   deletedAt: null,

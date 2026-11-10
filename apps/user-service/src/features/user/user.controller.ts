@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   FileTypeValidator,
-  ForbiddenException,
   Param,
   ParseFilePipe,
   Query,
@@ -62,28 +61,18 @@ export class UserController {
   }
 
   @ApiDelete()
-  async delete(
-    @Param('id') id: string,
-    @AuthorizedUserData() user: User,
-  ): Promise<string> {
-    if (user.id !== id) {
-      throw new ForbiddenException('Forbidden access');
-    }
-    await this.userService.softDelete(id);
+  async delete(@AuthorizedUserData('id') userId: string): Promise<string> {
+    await this.userService.softDelete(userId);
 
     return 'OK';
   }
 
   @ApiUpdate()
   async update(
-    @Param('id') id: string,
     @Body() dto: UserUpdateDto,
-    @AuthorizedUserData() user: User,
+    @AuthorizedUserData('id') userId: string,
   ): Promise<UserResponse> {
-    if (user.id !== id) {
-      throw new ForbiddenException('Forbidden access');
-    }
-    return await this.userService.update(id, dto);
+    return await this.userService.update(userId, dto);
   }
 
   @ApiMe()
