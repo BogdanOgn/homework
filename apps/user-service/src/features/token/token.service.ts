@@ -38,9 +38,9 @@ export class TokenService {
   }
 
   async generateTokens(payload: IAccessTokenPayload): Promise<ITokensResponse> {
-    const { id, login, email } = payload;
+    const { id, login, email, role } = payload;
 
-    const tokenPayload = { id, login, email };
+    const tokenPayload = { id, login, email, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(tokenPayload, {

@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway.js';
-import { AccessTokenModule } from '@app/common';
+import { AccessTokenModule, JwtStrategy } from '@app/common';
 import { NotificationController } from './notification.controller.js';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [AccessTokenModule],
+  imports: [AccessTokenModule, PassportModule],
   controllers: [NotificationController],
-  providers: [NotificationGateway],
+  providers: [NotificationGateway, JwtStrategy],
 })
 export class NotificationModule {}

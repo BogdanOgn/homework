@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AccessTokenService } from './access-token.service.js';
+import { AccessTokenService } from '../services/index.js';
 
 @Module({
   imports: [JwtModule.register({})],
