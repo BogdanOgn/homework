@@ -1,9 +1,3 @@
-export interface ITokenPayload {
-  id: string;
-  login: string;
-  email: string;
-}
-
 export interface ICreateToken {
   token: string;
   userId: string;

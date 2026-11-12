@@ -6,3 +6,4 @@ export * from './constants/index.js';
 export * from './types/index.js';
 export * from './module/index.js';
 export * from './docs/index.js';
+export * from './auth/index.js';

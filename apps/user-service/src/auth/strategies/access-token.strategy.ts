@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service.js';
 import { UserResponse } from '@features/user/types/user.types.js';
-import { ITokenPayload } from '@features/token/types/token.types.js';
+import { IAccessTokenPayload } from '@app/common';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -19,7 +19,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: ITokenPayload): Promise<UserResponse> {
+  async validate(payload: IAccessTokenPayload): Promise<UserResponse> {
     const { id } = payload;
     return await this.authService.validate(id);
   }

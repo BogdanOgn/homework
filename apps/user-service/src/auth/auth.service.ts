@@ -11,11 +11,9 @@ import { LoginUserDto } from './dto/login-user.dto.js';
 import { UserService } from '@features/user/user.service.js';
 import { UserResponse } from '@features/user/types/user.types.js';
 import { TokenService } from '@features/token/token.service.js';
-import {
-  ITokenPayload,
-  ITokensResponse,
-} from '@features/token/types/token.types.js';
+import { ITokensResponse } from '@features/token/types/token.types.js';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { IAccessTokenPayload } from '@app/common';
 
 @Injectable()
 export class AuthService {
@@ -102,7 +100,10 @@ export class AuthService {
     return 'OK';
   }
 
-  async refresh(user: ITokenPayload, token: string): Promise<ITokensResponse> {
+  async refresh(
+    user: IAccessTokenPayload,
+    token: string,
+  ): Promise<ITokensResponse> {
     await this.tokenService.deleteManyByToken(token);
 
     const { accessToken, refreshToken } =

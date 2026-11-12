@@ -4,8 +4,8 @@ import { JwtService } from '@nestjs/jwt';
 import type { CookieOptions } from 'express';
 import ms, { StringValue } from 'ms';
 import { RefreshToken } from '@generated/prisma/client.js';
-import { isDev } from '@app/common';
-import { ITokenPayload, ITokensResponse } from './types/token.types.js';
+import { IAccessTokenPayload, isDev } from '@app/common';
+import { ITokensResponse } from './types/token.types.js';
 import { TokenRepository } from './token.repository.js';
 import { hashToken } from './utils/hash-token.util.js';
 import { randomUUID } from 'crypto';
@@ -37,7 +37,7 @@ export class TokenService {
     this.COOKIE_DOMAIN = configService.getOrThrow<string>('COOKIE_DOMAIN');
   }
 
-  async generateTokens(payload: ITokenPayload): Promise<ITokensResponse> {
+  async generateTokens(payload: IAccessTokenPayload): Promise<ITokensResponse> {
     const { id, login, email } = payload;
 
     const tokenPayload = { id, login, email };
@@ -66,7 +66,7 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
-  async validateRefreshToken(token: string): Promise<ITokenPayload> {
+  async validateRefreshToken(token: string): Promise<IAccessTokenPayload> {
     const storedToken = await this.find(token);
 
     if (!storedToken) {
@@ -80,9 +80,12 @@ export class TokenService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     try {
-      const payload = await this.jwtService.verifyAsync<ITokenPayload>(token, {
-        secret: this.JWT_REFRESH_SECRET,
-      });
+      const payload = await this.jwtService.verifyAsync<IAccessTokenPayload>(
+        token,
+        {
+          secret: this.JWT_REFRESH_SECRET,
+        },
+      );
 
       if (!payload) {
         this.logger.warn('[Validate Refresh Token]: Invalid refresh token');

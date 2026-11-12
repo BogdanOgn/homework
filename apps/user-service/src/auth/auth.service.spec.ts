@@ -10,9 +10,9 @@ import {
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import * as bcrypt from 'bcrypt';
-import { ITokenPayload } from '@features/token/types/token.types.js';
 import { Prisma } from '@generated/prisma/client.js';
 import { Role } from '@generated/prisma/enums.js';
+import { IAccessTokenPayload } from '@app/common';
 
 vi.mock('bcrypt');
 
@@ -47,7 +47,7 @@ const userResponseWithPassword: UserResponseWithPassword = {
   password: hashedUserPassword,
 };
 
-const tokenPayload: ITokenPayload = {
+const tokenPayload: IAccessTokenPayload = {
   id: userId,
   login: existingUserLogin,
   email: existingUserEmail,

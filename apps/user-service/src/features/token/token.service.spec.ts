@@ -7,8 +7,8 @@ import ms, { type StringValue } from 'ms';
 import type { RefreshToken } from '@generated/prisma/client.js';
 import { TokenRepository } from './token.repository.js';
 import { hashToken } from './utils/hash-token.util.js';
-import { ITokenPayload } from './types/token.types.js';
 import { ConfigService } from '@nestjs/config';
+import { IAccessTokenPayload } from '@app/common';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -45,7 +45,7 @@ const expiredStoredToken: RefreshToken = {
   expiresAt: new Date(Date.now() - DAY),
 };
 
-const tokenPayload: ITokenPayload = {
+const tokenPayload: IAccessTokenPayload = {
   id: userId,
   login: 'user',
   email: 'user@gmail.com',
